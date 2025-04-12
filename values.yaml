@@ -1,0 +1,167 @@
+druid:
+  affinity: { }
+  annotations: { }
+  # Overrides extraEnv:
+  env: { }
+  # Overrides extraEnvFrom:
+  envFrom: { }
+  extraEnv: { }
+  extraEnvFrom: { }
+  image:
+    repository: apache/druid
+    pull:
+      policy: IfNotPresent
+      secrets: [ ]
+    tag: ""
+  commonRuntimeProperties: { }
+  deleteOrphanPvc: true
+  disablePVCDeletionFinalizer: false
+  extensions:
+    org.apache.druid.extensions:
+      - druid-datasketches
+      - druid-kafka-extraction-namespace
+      - druid-kafka-indexing-service
+      - druid-kubernetes-extensions
+      - druid-lookups-cached-global
+      - druid-multi-stage-query
+      - druid-s3-extensions
+    org.apache.druid.extensions.contrib:
+      - druid-kubernetes-overlord-extensions
+  extraCommonConfig: [ ]
+  jvmOptions:
+    - -Dfile.encoding=UTF-8
+    - -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+    - -Dlog4j.shutdownCallbackRegistry=org.apache.druid.common.config.Log4jShutdown
+    - -Dlog4j.shutdownHookEnabled=true
+    - -Dnet.spy.log.LoggerImpl=net.spy.memcached.compat.log.SLF4JLogger
+    - -Dorg.jboss.logging.provider=slf4j
+    - -Duser.timezone=UTC
+    - -XX:+ExitOnOutOfMemoryError
+    - -XX:MaxDirectMemorySize=2g
+    - -server
+  log4jConfig: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <Configuration status="WARN">
+        <Appenders>
+            <Console name="Console" target="SYSTEM_OUT">
+                <PatternLayout pattern="%d{ISO8601} %p [%t] %c - %m%n"/>
+            </Console>
+        </Appenders>
+        <Loggers>
+            <Root level="info">
+                <AppenderRef ref="Console"/>
+            </Root>
+        </Loggers>
+    </Configuration>
+  metadataStorage:
+    connector:
+      connectURI: jdbc:derby://localhost:1527/var/metadata.db;create=true
+      createTables: true
+      host: localhost
+      port: 1527
+    type: derby
+  nodeSelector: { }
+  nodes:
+    brokers:
+      env: { }
+      envFrom: { }
+      extraJvmOptions:
+        - -Xms512m
+        - -Xmx512m
+      jvmOptions: { }
+      podLabels: { }
+      replicas: 2
+      resources: { }
+      runtimeProperties:
+        druid:
+          sql:
+            enable: true
+      unsupported: { }
+    coordinators:
+      env: { }
+      envFrom: { }
+      extraJvmOptions:
+        - -Xms800m
+        - -Xmx800m
+      jvmOptions: { }
+      podLabels: { }
+      replicas: 1
+      resources: { }
+      runtimeProperties:
+        druid:
+          indexer:
+            runner:
+              capacity: 10
+              javaOptsArray:
+                - -Dfile.encoding=UTF-8
+                - -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+                - -Dlog4j.shutdownCallbackRegistry=org.apache.druid.common.config.Log4jShutdown
+                - -Dlog4j.shutdownHookEnabled=true
+                - -Dnet.spy.log.LoggerImpl=net.spy.memcached.compat.log.SLF4JLogger
+                - -Dorg.jboss.logging.provider=slf4j
+                - -Duser.timezone=UTC
+                - -XX:+ExitOnOutOfMemoryError
+                - -XX:MaxDirectMemorySize=2g
+                - -Xms512m
+                - -Xmx512m
+                - -server
+      unsupported: { }
+    historicals: # this is a role
+      historicals: # this is an instance name
+        env: { }
+        envFrom: { }
+        extraJvmOptions:
+          - -Xms512m
+          - -Xmx512m
+        jvmOptions: { }
+        podLabels: { }
+        replicas: 2
+        resources: { }
+        runtimeProperties: { }
+        storage:
+          class: standard
+          freeSpacePercent: 10
+          size: 10Gi
+        unsupported: { }
+    routers:
+      env: { }
+      envFrom: { }
+      extraJvmOptions:
+        - -Xmx512M
+        - -Xms512M
+      jvmOptions: { }
+      podLabels: { }
+      replicas: 2
+      resources: { }
+      runtimeProperties:
+        druid:
+          router:
+            managementProxy:
+              enabled: true
+      unsupported: { }
+  podAnnotations: { }
+  podLabels: { }
+  s3:
+    segments:
+      bucket: ""
+      disableAcls: true
+      prefix: ""
+    logs:
+      bucket: ""
+      disableAcls: true
+      prefix: ""
+  tolerations: [ ]
+  unsupported: { }
+druidIngestion:
+  folder: ingestions
+fullnameOverride: ""
+nameOverride: ""
+role:
+  annotations: { }
+roleBinding:
+  annotations: { }
+serviceAccount:
+  create: true
+  automount: true
+  annotations: { }
+  name: ""

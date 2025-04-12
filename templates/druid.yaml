@@ -1,0 +1,347 @@
+{{- with $.Values.druid }}
+{{- $extensions := list }}
+{{- range $k, $_ := .extensions }}
+{{- $extensions = concat $extensions . }}
+{{- end }}
+{{- $metadataStorage := .metadataStorage }}
+---
+apiVersion: druid.apache.org/v1alpha1
+kind: Druid
+metadata:
+  {{- include "druid.annotations" . | nindent 2 }}
+  labels: {{- include "druid.labels" $ | nindent 4 }}
+  name: {{ include "druid.fullname" $ }}
+spec:
+  additionalContainer:
+    - command:
+        - bash
+        - -c
+        - |
+          set -o errexit
+          cp -r /opt/druid/extensions /
+          ./bin/run-java \
+            -classpath "lib/*" \
+            -Ddruid.extensions.directory=/extensions \
+            org.apache.druid.cli.Main tools pull-deps \
+            {{- range $groupId, $_ := .extensions }}
+            {{- if ne $groupId "org.apache.druid.extensions" }}
+            {{- range $artifactId := . }}
+            -c {{ $groupId }}:{{ $artifactId }} \
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            --defaultVersion {{ $.Chart.AppVersion }} \
+            --no-default-hadoop
+      containerName: pull-deps
+      {{- with .image }}
+      image: {{ .repository }}:{{ .tag | default $.Chart.AppVersion }}
+      {{- end }}
+      runAsInit: true
+      volumeMounts:
+        - mountPath: /extensions
+          name: extensions
+  {{- with .affinity }}
+  affinity: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  common.runtime.properties: |
+    druid.discovery.k8s.clusterIdentifier={{ include "druid.fullname" $ }}
+    druid.discovery.type=k8s
+    druid.extensions.loadList={{ toRawJson $extensions }}
+    {{- with .s3.logs }}
+    druid.indexer.logs.disableAcl={{ .disableAcls }}
+    druid.indexer.logs.s3Bucket={{ .bucket | default (include "druid.fullname" $) }}
+    druid.indexer.logs.s3Prefix={{ .prefix }}
+    druid.indexer.logs.type=s3
+    {{- end }}
+    {{- include "druid._properties" (dict "dict" .metadataStorage "prefix" "druid.metadata.storage.") | nindent 4 }}
+    {{- with .s3.segments }}
+    druid.storage.baseKey={{ .prefix }}
+    druid.storage.bucket={{ .bucket | default (include "druid.fullname" $) }}
+    druid.storage.disableAcl={{ .disableAcls }}
+    druid.storage.type=s3
+    {{- end }}
+    druid.zk.service.enabled=false
+    {{- include "druid.properties" .commonRuntimeProperties | nindent 4 }}
+  commonConfigMountPath: /opt/druid/conf/druid/cluster/_common
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+  deleteOrphanPvc: {{ .deleteOrphanPvc }}
+  disablePVCDeletionFinalizer: {{ .disablePVCDeletionFinalizer }}
+  env:
+    {{- if .env }}
+    {{- toYaml .env | nindent 4 }}
+    {{- else }}
+    {{- with .extraEnv }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    {{- end }}
+  envFrom:
+    {{- if .envFrom }}
+    {{- toYaml .envFrom | nindent 4 }}
+    {{- else }}
+    {{- with .extraEnvFrom }}
+    {{- toYaml .| nindent 4 }}
+    {{- end }}
+    - secretRef:
+        name: {{ include "druid.fullname" $ }}
+    {{- end }}
+  {{- with .extraCommonConfig }}
+  extraCommonConfig: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .image }}
+  image: {{ .repository }}:{{ .tag | default $.Chart.AppVersion }}
+  {{- with .pull }}
+  {{- with .policy }}
+  imagePullPolicy: {{ . }}
+  {{- end }}
+  {{- with .secrets }}
+  imagePullSecrets: {{ . }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- with .jvmOptions }}
+  jvm.options: {{ . | join " " }}
+  {{- end }}
+  {{- with .log4jConfig }}
+  log4j.config: |-
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with .nodeSelector }}
+  nodeSelector: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .nodes }}
+  nodes:
+    {{- with .brokers }}
+    brokers:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    component: broker
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      druid.port: 8088 # must be 8088 or otherwise the DruidIngestion CRs don't work - see Druid Operator logs!
+      {{- with .env }}
+      env: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .envFrom }}
+      envFrom: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .extraJvmOptions }}
+      extra.jvm.options: {{ . | join " " }}
+      {{- end }}
+      {{- with .jvmOptions }}
+      jvm.options: {{ . | join " " }}
+      {{- end }}
+      kind: Deployment
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
+      nodeType: broker
+      replicas: {{ .replicas }}
+      {{- with .resources }}
+      resources: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .runtimeProperties }}
+      runtime.properties: |
+        {{- include "druid.properties" . | nindent 8 }}
+      {{- end }}
+      {{- with .unsupported }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- with .coordinators }}
+    coordinators:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    component: coordinator
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      druid.port: 8088
+      {{- with .env }}
+      env: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .envFrom }}
+      envFrom: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .extraJvmOptions }}
+      extra.jvm.options: {{ . | join " " }}
+      {{- end }}
+      {{- with .jvmOptions }}
+      jvm.options: {{ . | join " " }}
+      {{- end }}
+      kind: Deployment
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
+      nodeType: coordinator
+      replicas: {{ .replicas }}
+      {{- with .resources }}
+      resources: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      runtime.properties: |
+        druid.coordinator.asOverlord.enabled=true
+        druid.coordinator.asOverlord.overlordService=druid/overlord
+        druid.coordinator.startDelay=PT30S
+        druid.indexer.runner.namespace={{ $.Release.Namespace }}
+        druid.indexer.runner.type=k8s
+        {{- if $metadataStorage }}
+        druid.indexer.storage.type=metadata
+        {{- end }}
+        druid.indexer.task.encapsulatedTask=true
+        {{- include "druid.properties" .runtimeProperties | nindent 8 }}
+      # The peons will inherit this probe from the overlord, but they don't share the same endpoints, so we have to
+      # effectively disable it - see
+      # https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
+      startUpProbe:
+        exec:
+          command: [ /bin/true ]
+        initialDelaySeconds: 0
+      {{- with .unsupported }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- range $class, $_ := .historicals }}
+    "{{ $class }}":
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    component: historical
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      druid.port: 8088
+      {{- with .env }}
+      env: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .envFrom }}
+      envFrom: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .extraJvmOptions }}
+      extra.jvm.options: {{ . | join " " }}
+      {{- end }}
+      {{- with .jvmOptions }}
+      jvm.options: {{ . | join " " }}
+      {{- end }}
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
+      nodeType: historical
+      replicas: {{ .replicas }}
+      {{- with .resources }}
+      resources: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- $storage := .storage }}
+      runtime.properties: |
+        {{- with $storage }}
+        druid.segmentCache.locations=[ { "freeSpacePercent": {{ .freeSpacePercent }}, "maxSize": "{{ .size }}", "path": "/druid/data/segments" } ]
+        {{- end }}
+        {{- include "druid.properties" .runtimeProperties | nindent 8 }}
+      {{- with $storage }}
+      volumeClaimTemplates:
+        - metadata:
+            name: data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: {{ .size }}
+            storageClassName: {{ .class }}
+      {{- end }}
+      {{- with .unsupported }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- with .routers }}
+    routers:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    component: router
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      druid.port: 8088
+      {{- with .env }}
+      env: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .envFrom }}
+      envFrom: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .extraJvmOptions }}
+      extra.jvm.options: {{ . | join " " }}
+      {{- end }}
+      {{- with .jvmOptions }}
+      jvm.options: {{ . | join " " }}
+      {{- end }}
+      kind: Deployment
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
+      nodeType: router
+      replicas: {{ .replicas }}
+      {{- with .resources }}
+      resources: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .runtimeProperties }}
+      runtime.properties: |
+        {{- include "druid.properties" . | nindent 8 }}
+      {{- end }}
+      {{- with .unsupported }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  podAnnotations: {{- .podAnnotations | default .annotations | default (include "druid.selectorLabels" $ | fromYaml) | toYaml | nindent 4 }}
+  podLabels: {{- .podLabels | default (include "druid.labels" $ | fromYaml) | toYaml | nindent 4 }}
+  scalePvcSts: true
+  securityContext:
+    fsGroup: 1000 # druid
+    runAsGroup: 1000 # druid
+    runAsUser: 1000 # druid
+  serviceAccount: {{ include "druid.serviceAccountName" $ }}
+  services:
+    - spec:
+        clusterIP: None
+        type: ClusterIP
+  {{- with .tolerations }}
+  tolerations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  volumeMounts:
+    - mountPath: /druid/data
+      name: data
+    - mountPath: /opt/druid/extensions
+      name: extensions
+      readOnly: true
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /opt/druid/var
+      name: var
+  volumes:
+    - emptyDir: { }
+      name: data
+    - emptyDir: { }
+      name: extensions
+    - emptyDir: { }
+      name: tmp
+    - emptyDir: { }
+      name: var
+  {{- with .unsupported }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

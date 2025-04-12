@@ -1,0 +1,19 @@
+{{- with $.Values.role -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  {{- include "druid.annotations" . | nindent 2 }}
+  labels: {{- include "druid.labels" $ | nindent 4 }}
+  name: {{ include "druid.fullname" $ }}
+rules:
+  - apiGroups: [ "" ]
+    resources: [ configmaps, pods ]
+    verbs: [ "*" ]
+  - apiGroups: [ "" ]
+    resources: [ pods, pods/log ]
+    verbs: [ create, delete, get, list, watch ]
+  - apiGroups: [ batch ]
+    resources: [ jobs ]
+    verbs: [ create, delete, get, list, watch ]
+{{- end }}

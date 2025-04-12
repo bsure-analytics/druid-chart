@@ -1,0 +1,14 @@
+apiVersion: v2
+appVersion: 32.0.1
+description: A Helm chart for Apache Druid
+home: https://github.com/bsure-analytics/druid-chart
+keywords:
+  - Apache Druid
+  - Druid
+maintainers:
+  - name: Christian Schlichtherle
+    url: https://github.com/christian-schlichtherle
+name: druid
+sources:
+  - https://github.com/bsure-analytics/druid-chart/tree/main
+version: 0.1.0-SNAPSHOT # must be SemVer 2
