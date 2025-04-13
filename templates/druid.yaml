@@ -163,6 +163,9 @@ spec:
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
+      {{- with .services }}
+      services: {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .unsupported }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
@@ -218,6 +221,9 @@ spec:
         effectively disable it - see
         https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
       */}}
+      {{- with .services }}
+      services: {{- toYaml . | nindent 8 }}
+      {{- end }}
       startUpProbe:
         exec:
           command: [ /bin/true ]
@@ -266,6 +272,9 @@ spec:
         druid.segmentCache.locations=[ { "freeSpacePercent": {{ .freeSpacePercent }}, "maxSize": "{{ .size }}", "path": "/druid/data/segments" } ]
         {{- end }}
         {{- include "druid.properties" .runtimeProperties | nindent 8 }}
+      {{- with .services }}
+      services: {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with $storage }}
       volumeClaimTemplates:
         - metadata:
@@ -321,6 +330,9 @@ spec:
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
+      {{- with .services }}
+      services: {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .unsupported }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
@@ -335,10 +347,9 @@ spec:
     runAsGroup: 1000
     runAsUser: 1000
   serviceAccount: {{ include "druid.serviceAccountName" $ }}
-  services:
-    - spec:
-        clusterIP: None
-        type: ClusterIP
+  {{- with .services }}
+  services: {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with .tolerations }}
   tolerations: {{- toYaml . | nindent 4 }}
   {{- end }}
