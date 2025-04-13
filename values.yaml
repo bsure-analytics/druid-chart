@@ -158,7 +158,7 @@ druid:
   tolerations: [ ]
   unsupported: { }
 druidIngestion:
-  folder: ingestions
+  folder: ingestion
 fullnameOverride: ""
 nameOverride: ""
 role:
