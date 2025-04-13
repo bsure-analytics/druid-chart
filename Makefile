@@ -1,8 +1,12 @@
+GITHUB_REPOSITORY ?= $(shell git config --get remote.origin.url | sed -E 's/.*github.com[:\/](.*)\.git/\1/')
+GITHUB_REPOSITORY_OWNER ?= $(shell echo $(GITHUB_REPOSITORY) | cut -d/ -f1)
+GITHUB_REPOSITORY_NAME ?= $(shell echo $(GITHUB_REPOSITORY) | cut -d/ -f2)
 HELM_NAMESPACE ?= $(NAMESPACE)
 HELM_OPTS ?= $(OPTS)
 HELM_RELEASE ?= $(RELEASE)
 NAMESPACE ?= druid
 RELEASE ?= $(NAMESPACE)
+REPO_URL ?= https://$(GITHUB_REPOSITORY_OWNER).github.io/$(GITHUB_REPOSITORY_NAME)
 
 .DEFAULT_GOAL := upgrade
 
@@ -15,6 +19,12 @@ diff: .values.yaml
 		--namespace $(HELM_NAMESPACE) \
 		--values .values.yaml \
 		$(HELM_OPTS)
+
+.PHONY: dist
+dist:
+	helm package . --destination dist
+	curl --fail --output-dir dist --remote-name --silent $(REPO_URL)/index.yaml || true
+	helm repo index dist --merge dist/index.yaml --url $(REPO_URL)
 
 .PHONY: template
 template: .values.yaml
