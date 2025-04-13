@@ -60,7 +60,7 @@ druid:
       host: localhost
       port: 1527
     type: derby
-  metricsDimensions: { }
+  metricDimensions: { }
   nodeSelector: { }
   nodes:
     brokers:

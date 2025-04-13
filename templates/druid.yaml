@@ -114,8 +114,8 @@ spec:
   log4j.config: |-
     {{- . | nindent 4 }}
   {{- end }}
-  {{- with .metricsDimensions }}
-  metricDimensions.json: {{ toRawJson . | nindent 4 }}
+  {{- with .metricDimensions }}
+  metricDimensions.json: {{- toRawJson . | nindent 4 }}
   {{- end }}
   {{- with .nodeSelector }}
   nodeSelector: {{- toYaml . | nindent 4 }}
