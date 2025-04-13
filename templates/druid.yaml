@@ -134,7 +134,8 @@ spec:
                     component: broker
                 topologyKey: kubernetes.io/hostname
               weight: 1
-      druid.port: 8088 # must be 8088 or otherwise the DruidIngestion CRs don't work - see Druid Operator logs!
+      {{- /* must be 8088 or otherwise the DruidIngestion CRs don't work - see Druid Operator logs!*/}}
+      druid.port: 8088
       {{- with .env }}
       env: {{ toYaml . | nindent 8 }}
       {{- end }}
@@ -150,7 +151,7 @@ spec:
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
       {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 4 }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: broker
       replicas: {{ .replicas }}
@@ -193,7 +194,7 @@ spec:
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
       {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 4 }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: coordinator
       replicas: {{ .replicas }}
@@ -211,9 +212,11 @@ spec:
         {{- end }}
         druid.indexer.task.encapsulatedTask=true
         {{- include "druid.properties" .runtimeProperties | nindent 8 }}
-      # The peons will inherit this probe from the overlord, but they don't share the same endpoints, so we have to
-      # effectively disable it - see
-      # https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
+      {{- /*
+        The peons will inherit this probe from the overlord, but they don't share the same endpoints, so we have to
+        effectively disable it - see
+        https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
+      */}}
       startUpProbe:
         exec:
           command: [ /bin/true ]
@@ -249,7 +252,7 @@ spec:
       {{- end }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
       {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 4 }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: historical
       replicas: {{ .replicas }}
@@ -306,7 +309,7 @@ spec:
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
       {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 4 }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: router
       replicas: {{ .replicas }}
@@ -326,9 +329,10 @@ spec:
   podLabels: {{- .podLabels | default (include "druid.labels" $ | fromYaml) | toYaml | nindent 4 }}
   scalePvcSts: true
   securityContext:
-    fsGroup: 1000 # druid
-    runAsGroup: 1000 # druid
-    runAsUser: 1000 # druid
+    {{- /* uid 1000 == user druid */}}
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsUser: 1000
   serviceAccount: {{ include "druid.serviceAccountName" $ }}
   services:
     - spec:
