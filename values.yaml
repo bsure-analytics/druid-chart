@@ -165,8 +165,6 @@ druid:
         type: ClusterIP
   tolerations: [ ]
   unsupported: { }
-druidIngestion:
-  folder: ingestion
 fullnameOverride: ""
 nameOverride: ""
 role:
