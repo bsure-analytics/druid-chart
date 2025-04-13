@@ -3,6 +3,24 @@ entries:
   druid:
   - apiVersion: v2
     appVersion: 32.0.1
+    created: "2025-04-13T20:17:44.970576337Z"
+    description: A Helm chart for Apache Druid
+    digest: 704d25a1bf1467096e5157470ea44f55ca3c65235086908102bcb2c76b98d432
+    home: https://github.com/bsure-analytics/druid-chart
+    keywords:
+    - Apache Druid
+    - Druid
+    maintainers:
+    - name: Christian Schlichtherle
+      url: https://github.com/christian-schlichtherle
+    name: druid
+    sources:
+    - https://github.com/bsure-analytics/druid-chart/tree/main
+    urls:
+    - https://bsure-analytics.github.io/druid-chart/druid-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
+    appVersion: 32.0.1
     created: "2025-04-13T19:57:03.825360877Z"
     description: A Helm chart for Apache Druid
     digest: 33109ea9171820cb3bd1ef1790b7b4e30dc87b05912a05ae4c275b8aa3b2ab86
@@ -91,4 +109,4 @@ entries:
     urls:
     - https://bsure-analytics.github.io/druid-chart/druid-0.1.0.tgz
     version: 0.1.0
-generated: "2025-04-13T19:57:03.824433721Z"
+generated: "2025-04-13T20:17:44.96963073Z"
