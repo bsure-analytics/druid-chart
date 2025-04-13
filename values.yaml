@@ -2,11 +2,11 @@ druid:
   affinity: { }
   annotations: { }
   # Overrides extraEnv:
-  env: { }
+  env: [ ]
   # Overrides extraEnvFrom:
-  envFrom: { }
-  extraEnv: { }
-  extraEnvFrom: { }
+  envFrom: [ ]
+  extraEnv: [ ]
+  extraEnvFrom: [ ]
   image:
     repository: apache/druid
     pull:
@@ -64,12 +64,12 @@ druid:
   nodeSelector: { }
   nodes:
     brokers:
-      env: { }
-      envFrom: { }
+      env: [ ]
+      envFrom: [ ]
       extraJvmOptions:
         - -Xms512m
         - -Xmx512m
-      jvmOptions: { }
+      jvmOptions: [ ]
       nodeSelector: { }
       podLabels: { }
       replicas: 2
@@ -80,12 +80,12 @@ druid:
             enable: true
       unsupported: { }
     coordinators:
-      env: { }
-      envFrom: { }
+      env: [ ]
+      envFrom: [ ]
       extraJvmOptions:
         - -Xms800m
         - -Xmx800m
-      jvmOptions: { }
+      jvmOptions: [ ]
       nodeSelector: { }
       podLabels: { }
       replicas: 1
@@ -111,12 +111,12 @@ druid:
       unsupported: { }
     historicals: # this is a role
       historicals: # this is an instance name
-        env: { }
-        envFrom: { }
+        env: [ ]
+        envFrom: [ ]
         extraJvmOptions:
           - -Xms512m
           - -Xmx512m
-        jvmOptions: { }
+        jvmOptions: [ ]
         nodeSelector: { }
         podLabels: { }
         replicas: 2
@@ -128,12 +128,12 @@ druid:
           size: 10Gi
         unsupported: { }
     routers:
-      env: { }
-      envFrom: { }
+      env: [ ]
+      envFrom: [ ]
       extraJvmOptions:
         - -Xmx512M
         - -Xms512M
-      jvmOptions: { }
+      jvmOptions: [ ]
       nodeSelector: { }
       podLabels: { }
       replicas: 2
