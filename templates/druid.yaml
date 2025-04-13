@@ -114,6 +114,9 @@ spec:
   log4j.config: |-
     {{- . | nindent 4 }}
   {{- end }}
+  {{- with .metricsDimensions }}
+  metricDimensions.json: {{ toRawJson . | nindent 4 }}
+  {{- end }}
   {{- with .nodeSelector }}
   nodeSelector: {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -146,6 +149,9 @@ spec:
       {{- end }}
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
+      {{- with .nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 4 }}
+      {{- end }}
       nodeType: broker
       replicas: {{ .replicas }}
       {{- with .resources }}
@@ -186,6 +192,9 @@ spec:
       {{- end }}
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
+      {{- with .nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 4 }}
+      {{- end }}
       nodeType: coordinator
       replicas: {{ .replicas }}
       {{- with .resources }}
@@ -239,6 +248,9 @@ spec:
       jvm.options: {{ . | join " " }}
       {{- end }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
+      {{- with .nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 4 }}
+      {{- end }}
       nodeType: historical
       replicas: {{ .replicas }}
       {{- with .resources }}
@@ -293,6 +305,9 @@ spec:
       {{- end }}
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
+      {{- with .nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 4 }}
+      {{- end }}
       nodeType: router
       replicas: {{ .replicas }}
       {{- with .resources }}

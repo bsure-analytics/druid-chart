@@ -60,6 +60,7 @@ druid:
       host: localhost
       port: 1527
     type: derby
+  metricsDimensions: { }
   nodeSelector: { }
   nodes:
     brokers:
@@ -69,6 +70,7 @@ druid:
         - -Xms512m
         - -Xmx512m
       jvmOptions: { }
+      nodeSelector: { }
       podLabels: { }
       replicas: 2
       resources: { }
@@ -84,6 +86,7 @@ druid:
         - -Xms800m
         - -Xmx800m
       jvmOptions: { }
+      nodeSelector: { }
       podLabels: { }
       replicas: 1
       resources: { }
@@ -114,6 +117,7 @@ druid:
           - -Xms512m
           - -Xmx512m
         jvmOptions: { }
+        nodeSelector: { }
         podLabels: { }
         replicas: 2
         resources: { }
@@ -130,6 +134,7 @@ druid:
         - -Xmx512M
         - -Xms512M
       jvmOptions: { }
+      nodeSelector: { }
       podLabels: { }
       replicas: 2
       resources: { }
