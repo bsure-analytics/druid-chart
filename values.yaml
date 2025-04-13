@@ -53,13 +53,7 @@ druid:
             </Root>
         </Loggers>
     </Configuration>
-  metadataStorage:
-    connector:
-      connectURI: jdbc:derby://localhost:1527/var/metadata.db;create=true
-      createTables: true
-      host: localhost
-      port: 1527
-    type: derby
+  metadataStorage: { }
   metricDimensions: { }
   nodeSelector: { }
   nodes:
@@ -89,7 +83,7 @@ druid:
       jvmOptions: [ ]
       nodeSelector: { }
       podLabels: { }
-      replicas: 1
+      replicas: 2
       resources: { }
       runtimeProperties:
         druid:
