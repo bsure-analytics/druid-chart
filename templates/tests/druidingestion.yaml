@@ -1,0 +1,19 @@
+{{- range $path, $bytes := $.Files.Glob "ingestion/*.json" }}
+{{- with $bytes | toString | fromJson }}
+---
+apiVersion: druid.apache.org/v1alpha1
+kind: DruidIngestion
+metadata:
+  annotations:
+    helm.sh/hook: test
+  labels: {{- include "druid.labels" $ | nindent 4 }}
+  name: {{ include "druid.fullname" $ }}-{{ base $path | trimSuffix ".json" }}
+spec:
+  druidCluster: {{ include "druid.fullname" $ }}
+  ingestion:
+    spec: |-
+      {{- toPrettyJson . | nindent 6 }}
+    type: {{ eq .type "index_parallel" | ternary "native-batch" .type }}
+  suspend: {{ .suspended | default false }}
+{{- end }}
+{{- end }}
