@@ -49,12 +49,12 @@ spec:
     {{- with .s3.logs }}
     druid.indexer.logs.disableAcl={{ .disableAcls }}
     druid.indexer.logs.s3Bucket={{ .bucket | default (include "druid.fullname" $) }}
-    druid.indexer.logs.s3Prefix={{ .prefix }}
+    druid.indexer.logs.s3Prefix={{ .prefix | default (include "druid.name" $ | printf "%s-logs") }}
     druid.indexer.logs.type=s3
     {{- end }}
     {{- include "druid._properties" (dict "dict" .metadataStorage "prefix" "druid.metadata.storage.") | nindent 4 }}
     {{- with .s3.segments }}
-    druid.storage.baseKey={{ .prefix }}
+    druid.storage.baseKey={{ .prefix | default (include "druid.name" $) }}
     druid.storage.bucket={{ .bucket | default (include "druid.fullname" $) }}
     druid.storage.disableAcl={{ .disableAcls }}
     druid.storage.type=s3
@@ -147,7 +147,9 @@ spec:
       {{- with .jvmOptions }}
       jvm.options: {{ . | join " " }}
       {{- end }}
-      kind: Deployment
+      {{- with .kind }}
+      kind: {{ . }}
+      {{- end }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
       {{- with .nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
@@ -193,7 +195,9 @@ spec:
       {{- with .jvmOptions }}
       jvm.options: {{ . | join " " }}
       {{- end }}
-      kind: Deployment
+      {{- with .kind }}
+      kind: {{ . }}
+      {{- end }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
       {{- with .nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
@@ -255,6 +259,9 @@ spec:
       {{- with .jvmOptions }}
       jvm.options: {{ . | join " " }}
       {{- end }}
+      {{- with .kind }}
+      kind: {{ . }}
+      {{- end }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
       {{- with .nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
@@ -283,7 +290,7 @@ spec:
             resources:
               requests:
                 storage: {{ .size }}
-            storageClassName: {{ .class }}
+            storageClassName: {{ .class | default $.Values.global.defaultStorageClass }}
       {{- end }}
       {{- with .unsupported }}
       {{- toYaml . | nindent 6 }}
@@ -314,7 +321,9 @@ spec:
       {{- with .jvmOptions }}
       jvm.options: {{ . | join " " }}
       {{- end }}
-      kind: Deployment
+      {{- with .kind }}
+      kind: {{ . }}
+      {{- end }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
       {{- with .nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}

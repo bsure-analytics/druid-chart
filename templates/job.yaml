@@ -1,0 +1,32 @@
+{{- if $.Values.operator.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels: {{- include "druid.labels" $ | nindent 4 }}
+  name: {{ include "druid.fullname" $ }}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl delete druidingestion \
+                --namespace {{ $.Release.Namespace }} \
+                --selector app.kubernetes.io/instance={{ $.Release.Name }} \
+                --selector app.kubernetes.io/name={{ include "druid.name" $ }} \
+                --wait=true
+              kubectl delete druid {{ include "druid.fullname" $ }} \
+                --namespace {{ $.Release.Namespace }} \
+                --wait=true
+          image: "bitnami/kubectl:{{ $.Capabilities.KubeVersion.Version | trimPrefix "v" }}"
+          name: kubectl
+      restartPolicy: Never
+      serviceAccountName: druid-operator
+{{- end }}

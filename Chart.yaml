@@ -1,5 +1,15 @@
 apiVersion: v2
 appVersion: 32.0.1
+dependencies:
+  - alias: operator
+    condition: operator.enabled
+    name: druid-operator
+    repository: https://charts.datainfra.io
+    version: 0.3.9
+  - condition: postgresql.enabled
+    name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: 16.6.3
 description: A Helm chart for Apache Druid
 home: https://github.com/bsure-analytics/druid-chart
 keywords:

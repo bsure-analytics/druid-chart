@@ -65,6 +65,7 @@ druid:
         - -Xms512m
         - -Xmx512m
       jvmOptions: [ ]
+      kind: Deployment
       nodeSelector: { }
       podLabels: { }
       replicas: 2
@@ -83,6 +84,7 @@ druid:
         - -Xms800m
         - -Xmx800m
       jvmOptions: [ ]
+      kind: Deployment
       nodeSelector: { }
       podLabels: { }
       replicas: 2
@@ -116,6 +118,7 @@ druid:
           - -Xms512m
           - -Xmx512m
         jvmOptions: [ ]
+        kind: ''
         nodeSelector: { }
         podLabels: { }
         replicas: 2
@@ -123,7 +126,7 @@ druid:
         runtimeProperties: { }
         services: [ ]
         storage:
-          class: standard
+          class: ''
           freeSpacePercent: 10
           size: 10Gi
         unsupported: { }
@@ -135,6 +138,7 @@ druid:
         - -Xmx512M
         - -Xms512M
       jvmOptions: [ ]
+      kind: Deployment
       nodeSelector: { }
       podLabels: { }
       replicas: 2
@@ -164,11 +168,21 @@ druid:
   tolerations: [ ]
   unsupported: { }
 fullnameOverride: ""
+global:
+  createClusterRole: false
+  defaultStorageClass: standard
 nameOverride: ""
+operator:
+  enabled: false
+  env:
+    WATCH_NAMESPACE: druid
+postgresql:
+  enabled: false
 role:
   annotations: { }
 roleBinding:
   annotations: { }
+secret: { }
 serviceAccount:
   create: true
   automount: true
