@@ -58,6 +58,7 @@ druid:
   nodeSelector: { }
   nodes:
     brokers:
+      druidPort: 8088
       env: [ ]
       envFrom: [ ]
       extraJvmOptions:
@@ -75,6 +76,7 @@ druid:
       services: [ ]
       unsupported: { }
     coordinators:
+      druidPort: 8088
       env: [ ]
       envFrom: [ ]
       extraJvmOptions:
@@ -107,6 +109,7 @@ druid:
       unsupported: { }
     historicals: # this is a role
       historicals: # this is an instance name
+        druidPort: 8088
         env: [ ]
         envFrom: [ ]
         extraJvmOptions:
@@ -125,6 +128,7 @@ druid:
           size: 10Gi
         unsupported: { }
     routers:
+      druidPort: 8088
       env: [ ]
       envFrom: [ ]
       extraJvmOptions:

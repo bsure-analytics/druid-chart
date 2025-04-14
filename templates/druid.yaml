@@ -134,8 +134,7 @@ spec:
                     component: broker
                 topologyKey: kubernetes.io/hostname
               weight: 1
-      {{- /* must be 8088 or otherwise the DruidIngestion CRs don't work - see Druid Operator logs!*/}}
-      druid.port: 8088
+      druid.port: {{ .druidPort }}
       {{- with .env }}
       env: {{ toYaml . | nindent 8 }}
       {{- end }}
@@ -181,7 +180,7 @@ spec:
                     component: coordinator
                 topologyKey: kubernetes.io/hostname
               weight: 1
-      druid.port: 8088
+      druid.port: {{ .druidPort }}
       {{- with .env }}
       env: {{ toYaml . | nindent 8 }}
       {{- end }}
@@ -243,7 +242,7 @@ spec:
                     component: historical
                 topologyKey: kubernetes.io/hostname
               weight: 1
-      druid.port: 8088
+      druid.port: {{ .druidPort }}
       {{- with .env }}
       env: {{ toYaml . | nindent 8 }}
       {{- end }}
@@ -302,7 +301,7 @@ spec:
                     component: router
                 topologyKey: kubernetes.io/hostname
               weight: 1
-      druid.port: 8088
+      druid.port: {{ .druidPort }}
       {{- with .env }}
       env: {{ toYaml . | nindent 8 }}
       {{- end }}
