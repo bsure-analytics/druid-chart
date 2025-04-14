@@ -35,11 +35,10 @@ template: .values.yaml
 		$(HELM_OPTS)
 
 .PHONY: test
-test: .values.yaml
+test:
 	helm test $(HELM_RELEASE) \
 		--namespace $(HELM_NAMESPACE) \
 		--timeout 10m \
-		--values .values.yaml \
 		$(HELM_OPTS)
 
 .PHONY: uninstall down
