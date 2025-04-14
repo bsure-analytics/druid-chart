@@ -8,7 +8,6 @@
 apiVersion: druid.apache.org/v1alpha1
 kind: Druid
 metadata:
-  {{- include "druid.annotations" . | nindent 2 }}
   labels: {{- include "druid.labels" $ | nindent 4 }}
   name: {{ include "druid.fullname" $ }}
 spec:
@@ -338,7 +337,7 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
-  podAnnotations: {{- .podAnnotations | default .annotations | default (include "druid.selectorLabels" $ | fromYaml) | toYaml | nindent 4 }}
+  podAnnotations: {{- .podAnnotations | default (include "druid.selectorLabels" $ | fromYaml) | toYaml | nindent 4 }}
   podLabels: {{- .podLabels | default (include "druid.labels" $ | fromYaml) | toYaml | nindent 4 }}
   scalePvcSts: true
   securityContext:

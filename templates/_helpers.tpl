@@ -1,13 +1,4 @@
 {{/*
-Optional annotations.
-*/}}
-{{- define "druid.annotations" -}}
-{{- with .annotations }}
-annotations: {{- toYaml . | nindent 2 }}
-{{- end }}
-{{- end }}
-
-{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "druid.chart" -}}
