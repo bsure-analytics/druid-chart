@@ -23,6 +23,7 @@ diff: .values.yaml
 
 .PHONY: dist
 dist:
+	helm dependency update
 	helm package . --destination dist
 	curl --fail --output-dir dist --remote-name --silent $(REPO_URL)/index.yaml || true
 	helm repo index dist --merge dist/index.yaml --url $(REPO_URL)
