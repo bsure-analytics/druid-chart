@@ -172,6 +172,12 @@ fullnameOverride: ""
 global:
   createClusterRole: false
   defaultStorageClass: standard
+metricsServer:
+  args:
+    - --kubelet-insecure-tls
+    - --kubelet-preferred-address-types=InternalIP
+  enabled: false
+  nameOverride: metrics-server
 nameOverride: ""
 operator:
   enabled: false
