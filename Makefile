@@ -10,15 +10,15 @@ REPO_URL ?= https://$(GITHUB_REPOSITORY_OWNER).github.io/$(GITHUB_REPOSITORY_NAM
 
 .DEFAULT_GOAL := upgrade
 
-.values.yaml:
+custom.yaml:
 	touch $@
 
 .PHONY: diff
-diff: .values.yaml
+diff: custom.yaml
 	helm diff upgrade $(HELM_RELEASE) . \
 		--context 3 \
 		--namespace $(HELM_NAMESPACE) \
-		--values .values.yaml \
+		--values custom.yaml \
 		$(HELM_OPTS)
 
 .PHONY: dist
@@ -29,10 +29,10 @@ dist:
 	helm repo index dist --merge dist/index.yaml --url $(REPO_URL)
 
 .PHONY: template
-template: .values.yaml
+template: custom.yaml
 	helm template $(HELM_RELEASE) . \
 		--namespace $(HELM_NAMESPACE) \
-		--values .values.yaml \
+		--values custom.yaml \
 		$(HELM_OPTS)
 
 .PHONY: test
@@ -49,10 +49,10 @@ uninstall down:
 		$(HELM_OPTS)
 
 .PHONY: upgrade up
-upgrade up: .values.yaml
+upgrade up: custom.yaml
 	helm upgrade $(HELM_RELEASE) . \
 		--create-namespace \
 		--install \
 		--namespace $(HELM_NAMESPACE) \
-		--values .values.yaml \
+		--values custom.yaml \
 		$(HELM_OPTS)

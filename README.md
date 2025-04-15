@@ -26,7 +26,7 @@ First, make sure `kubectl get nodes -o wide` is working.
 For local development, you can use Kind (Kubernetes in Docker), e.g. bundled with Docker Desktop.
 
 Next, check the file `values.yaml`.
-For any values you want to fill in or override, please do so in the file `.values.yaml` - you may need to create this
+For any values you want to fill in or override, please do so in the file `custom.yaml` - you may need to create this
 file first. 
 
 Finally, deploy the druid-operator:
