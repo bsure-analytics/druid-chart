@@ -18,7 +18,7 @@ spec:
         - |
           set -o errexit
           cp -r /opt/druid/extensions /
-          ./bin/run-java \
+          exec ./bin/run-java \
             -classpath "lib/*" \
             -Ddruid.extensions.directory=/extensions \
             org.apache.druid.cli.Main tools pull-deps \
@@ -130,8 +130,13 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    {{- with .podLabels | merge $.Values.druid.podLabels }}
+                    {{- toYaml . | nindent 20 }}
+                    {{- end }}
+                    app: druid
                     component: broker
+                    druid_cr: {{ include "druid.fullname" $ }}
+                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-brokers
                 topologyKey: kubernetes.io/hostname
               weight: 1
       druid.port: {{ .druidPort }}
@@ -155,6 +160,12 @@ spec:
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: broker
+      {{- with .podAnnotations }}
+      podAnnotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .podLabels }}
+      podLabels: {{- toYaml . | nindent 8 }}
+      {{- end }}
       replicas: {{ .replicas }}
       {{- with .resources }}
       resources: {{- toYaml . | nindent 8 }}
@@ -178,8 +189,13 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    {{- with .podLabels | merge $.Values.druid.podLabels }}
+                    {{- toYaml . | nindent 20 }}
+                    {{- end }}
+                    app: druid
                     component: coordinator
+                    druid_cr: {{ include "druid.fullname" $ }}
+                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-coordinators
                 topologyKey: kubernetes.io/hostname
               weight: 1
       druid.port: {{ .druidPort }}
@@ -203,6 +219,12 @@ spec:
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: coordinator
+      {{- with .podAnnotations }}
+      podAnnotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .podLabels }}
+      podLabels: {{- toYaml . | nindent 8 }}
+      {{- end }}
       replicas: {{ .replicas }}
       {{- with .resources }}
       resources: {{- toYaml . | nindent 8 }}
@@ -242,8 +264,13 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    {{- with .podLabels | merge $.Values.druid.podLabels }}
+                    {{- toYaml . | nindent 20 }}
+                    {{- end }}
+                    app: druid
                     component: historical
+                    druid_cr: {{ include "druid.fullname" $ }}
+                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-{{ $class }}
                 topologyKey: kubernetes.io/hostname
               weight: 1
       druid.port: {{ .druidPort }}
@@ -267,6 +294,12 @@ spec:
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: historical
+      {{- with .podAnnotations }}
+      podAnnotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .podLabels }}
+      podLabels: {{- toYaml . | nindent 8 }}
+      {{- end }}
       replicas: {{ .replicas }}
       {{- with .resources }}
       resources: {{- toYaml . | nindent 8 }}
@@ -304,8 +337,13 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    {{- .podLabels | default $.Values.druid.podLabels | default (fromYaml (include "druid.selectorLabels" $)) | toYaml | nindent 20 }}
+                    {{- with .podLabels | merge $.Values.druid.podLabels }}
+                    {{- toYaml . | nindent 20 }}
+                    {{- end }}
+                    app: druid
                     component: router
+                    druid_cr: {{ include "druid.fullname" $ }}
+                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-routers
                 topologyKey: kubernetes.io/hostname
               weight: 1
       druid.port: {{ .druidPort }}
@@ -329,6 +367,12 @@ spec:
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       nodeType: router
+      {{- with .podAnnotations }}
+      podAnnotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .podLabels }}
+      podLabels: {{- toYaml . | nindent 8 }}
+      {{- end }}
       replicas: {{ .replicas }}
       {{- with .resources }}
       resources: {{- toYaml . | nindent 8 }}
@@ -345,8 +389,8 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
-  podAnnotations: {{- .podAnnotations | default (include "druid.selectorLabels" $ | fromYaml) | toYaml | nindent 4 }}
-  podLabels: {{- .podLabels | default (include "druid.labels" $ | fromYaml) | toYaml | nindent 4 }}
+  podAnnotations: {{- toYaml .podAnnotations | nindent 4 }}
+  podLabels: {{- toYaml .podLabels | nindent 4 }}
   scalePvcSts: true
   securityContext:
     {{- /* uid 1000 == user druid */}}

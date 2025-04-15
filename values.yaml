@@ -54,7 +54,12 @@ druid:
             </Root>
         </Loggers>
     </Configuration>
-  metadataStorage: { }
+  metadataStorage:
+    connector: { }
+    #connectURI: jdbc:postgresql://druid-postgresql/druid
+    #password: druid
+    #user: druid
+    type: postgresql
   metricDimensions: { }
   nodeSelector: { }
   nodes:
@@ -68,6 +73,7 @@ druid:
       jvmOptions: [ ]
       kind: Deployment
       nodeSelector: { }
+      podAnnotations: { }
       podLabels: { }
       replicas: 2
       resources: { }
@@ -87,6 +93,7 @@ druid:
       jvmOptions: [ ]
       kind: Deployment
       nodeSelector: { }
+      podAnnotations: { }
       podLabels: { }
       replicas: 2
       resources: { }
@@ -111,7 +118,7 @@ druid:
       services: [ ]
       unsupported: { }
     historicals: # this is a role
-      historicals: # this is an instance name
+      cold:
         druidPort: 8088
         env: [ ]
         envFrom: [ ]
@@ -121,6 +128,28 @@ druid:
         jvmOptions: [ ]
         kind: ''
         nodeSelector: { }
+        podAnnotations: { }
+        podLabels: { }
+        replicas: 0
+        resources: { }
+        runtimeProperties: { }
+        services: [ ]
+        storage:
+          class: ''
+          freeSpacePercent: 10
+          size: 10Gi
+        unsupported: { }
+      hot:
+        druidPort: 8088
+        env: [ ]
+        envFrom: [ ]
+        extraJvmOptions:
+          - -Xms512m
+          - -Xmx512m
+        jvmOptions: [ ]
+        kind: ''
+        nodeSelector: { }
+        podAnnotations: { }
         podLabels: { }
         replicas: 2
         resources: { }
@@ -132,6 +161,8 @@ druid:
           size: 10Gi
         unsupported: { }
     routers:
+      # Port 8088 is required because it's hardcoded in the Druid operator - see
+      # https://github.com/datainfrahq/druid-operator/issues/220 :
       druidPort: 8088
       env: [ ]
       envFrom: [ ]
@@ -141,6 +172,7 @@ druid:
       jvmOptions: [ ]
       kind: Deployment
       nodeSelector: { }
+      podAnnotations: { }
       podLabels: { }
       replicas: 2
       resources: { }
@@ -151,45 +183,68 @@ druid:
               enabled: true
       services: [ ]
       unsupported: { }
-  podAnnotations: { }
+  podAnnotations:
+    dummy: k8s_extension_needs_at_least_one_annotation
   podLabels: { }
   s3:
+    # Configure S3 for data segments:
     segments:
+      # Default value is the full name of the chart:
       bucket: ""
       disableAcls: true
+      # Default value is the name of the chart:
       prefix: ""
+    # Configure S3 for indexing logs:
     logs:
+      # Default value is the full name of the chart:
       bucket: ""
       disableAcls: true
+      # Default value is the name of the chart plus `-logs` as suffix:
       prefix: ""
   services:
     - spec:
+        # Must be headless:
         clusterIP: None
-        type: ClusterIP
   tolerations: [ ]
   unsupported: { }
+# Unless overridden in druid.s3.(segments|logs).bucket (see above), this is also used as the S3 bucket name:
 fullnameOverride: ""
 global:
-  createClusterRole: false
-  defaultStorageClass: standard
+  #createClusterRole: false
+  defaultStorageClass: ''
 metricsServer:
   args:
     - --kubelet-insecure-tls
     - --kubelet-preferred-address-types=InternalIP
+  # For local development, you may want to set this to `true`:
   enabled: false
   nameOverride: metrics-server
 nameOverride: ""
 operator:
+  # For local development, you may want to set this to `true`:
   enabled: false
-  env:
-    WATCH_NAMESPACE: druid
+  #env:
+  #  WATCH_NAMESPACE: druid
 postgresql:
+  # For local development, you may want to set this to `true`:
   enabled: false
+  #auth:
+  #  database: druid
+  #  enablePostgresUser: false
+  #  password: druid
+  #  username: druid
 role:
   annotations: { }
 roleBinding:
   annotations: { }
 secret: { }
+  #stringData:
+  #  AWS_ACCESS_KEY_ID: <aws-access-key-id>
+  #  AWS_REGION: eu-central-1
+  #  AWS_SECRET_ACCESS_KEY: <aws-secret-access-key>
+service:
+  enabled: true
+  port: 80
 serviceAccount:
   create: true
   automount: true

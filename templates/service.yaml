@@ -1,0 +1,28 @@
+{{- with $.Values.service }}
+{{- if .enabled }}
+{{ $port := .port }}
+{{- range $role := tuple "broker" "router" }}
+{{- with $.Values.druid }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels: {{- include "druid.labels" $ | nindent 4 }}
+  name: {{ include "druid.fullname" $ }}-client-{{ $role }}s
+spec:
+  ports:
+    - name: http
+      port: {{ $port }}
+      targetPort: druid-port
+  selector:
+    {{- with .podLabels | merge (dig (print $role "s") "podLabels" dict .nodes) }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    app: druid
+    component: {{ $role }}
+    druid_cr: {{ include "druid.fullname" $ }}
+    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-{{ $role }}s
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
