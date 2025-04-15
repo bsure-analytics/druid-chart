@@ -3,6 +3,34 @@ entries:
   druid:
   - apiVersion: v2
     appVersion: 32.0.1
+    created: "2025-04-15T00:13:25.879602298Z"
+    dependencies:
+    - alias: operator
+      condition: operator.enabled
+      name: druid-operator
+      repository: https://charts.datainfra.io
+      version: 0.3.9
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.3
+    description: A Helm chart for Apache Druid
+    digest: 28c90586dcb17dbaff8319411a9efeab41e359471a540c9b2c2be7916ee32652
+    home: https://github.com/bsure-analytics/druid-chart
+    keywords:
+    - Apache Druid
+    - Druid
+    maintainers:
+    - name: Christian Schlichtherle
+      url: https://github.com/christian-schlichtherle
+    name: druid
+    sources:
+    - https://github.com/bsure-analytics/druid-chart/tree/main
+    urls:
+    - https://bsure-analytics.github.io/druid-chart/druid-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
+    appVersion: 32.0.1
     created: "2025-04-14T01:20:29.256440344Z"
     description: A Helm chart for Apache Druid
     digest: e98442a7caa6592657a359433adfa70b7921ec1e7f1dd7148ab95d6765327da1
@@ -181,4 +209,4 @@ entries:
     urls:
     - https://bsure-analytics.github.io/druid-chart/druid-0.1.0.tgz
     version: 0.1.0
-generated: "2025-04-14T01:20:29.254509409Z"
+generated: "2025-04-15T00:13:25.870032467Z"
