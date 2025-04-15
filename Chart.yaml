@@ -21,4 +21,4 @@ maintainers:
 name: druid
 sources:
   - https://github.com/bsure-analytics/druid-chart/tree/main
-version: 0.5.0 # must be SemVer 2
+version: 0.5.2 # must be SemVer 2
