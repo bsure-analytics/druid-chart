@@ -25,6 +25,7 @@ druid:
       - druid-lookups-cached-global
       - druid-multi-stage-query
       - druid-s3-extensions
+      - postgresql-metadata-storage
     org.apache.druid.extensions.contrib:
       - druid-kubernetes-overlord-extensions
   extraCommonConfig: [ ]
