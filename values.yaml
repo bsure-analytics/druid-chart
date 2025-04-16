@@ -245,6 +245,7 @@ secret: { }
 service:
   enabled: true
   port: 80
+  type: ClusterIP
 serviceAccount:
   create: true
   automount: true
