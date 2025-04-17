@@ -1,3 +1,57 @@
+{{- define "druid.nodeSpec" -}}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              {{- with .podLabels | merge .root.Values.druid.podLabels }}
+              {{- toYaml . | nindent 20 }}
+              {{- end }}
+              app: druid
+              component: {{ .nodeType }}
+              druid_cr: {{ include "druid.fullname" .root }}
+              nodeSpecUniqueStr: druid-{{ include "druid.fullname" .root }}-{{ .nodeCategory }}
+          topologyKey: kubernetes.io/hostname
+        weight: 1
+druid.port: {{ .druidPort }}
+{{- with .env }}
+env: {{ toYaml . | nindent 8 }}
+{{- end }}
+{{- with .envFrom }}
+envFrom: {{ toYaml . | nindent 8 }}
+{{- end }}
+{{- with .extraJvmOptions }}
+extra.jvm.options: {{ . | join " " }}
+{{- end }}
+{{- with .jvmOptions }}
+jvm.options: {{ . | join " " }}
+{{- end }}
+{{- with .kind }}
+kind: {{ . }}
+{{- end }}
+{{- with .nodeSelector }}
+nodeSelector: {{- toYaml . | nindent 8 }}
+{{- end }}
+nodeType: {{ .nodeType }}
+{{- with .podAnnotations }}
+podAnnotations: {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with .podLabels }}
+podLabels: {{- toYaml . | nindent 8 }}
+{{- end }}
+replicas: {{ .replicas }}
+{{- with .resources }}
+resources: {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with .services }}
+services: {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with .unsupported }}
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end -}}
+
 {{- with $.Values.druid }}
 {{- $extensions := list }}
 {{- range $k, $_ := .extensions }}
@@ -122,113 +176,19 @@ spec:
   {{- end }}
   {{- with .nodes }}
   nodes:
-    {{- with .brokers }}
+    {{- with .brokers | merge (dict "nodeCategory" "brokers") }}
     brokers:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    {{- with .podLabels | merge $.Values.druid.podLabels }}
-                    {{- toYaml . | nindent 20 }}
-                    {{- end }}
-                    app: druid
-                    component: broker
-                    druid_cr: {{ include "druid.fullname" $ }}
-                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-brokers
-                topologyKey: kubernetes.io/hostname
-              weight: 1
-      druid.port: {{ .druidPort }}
-      {{- with .env }}
-      env: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .envFrom }}
-      envFrom: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .extraJvmOptions }}
-      extra.jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .jvmOptions }}
-      jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .kind }}
-      kind: {{ . }}
-      {{- end }}
+      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
-      {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      nodeType: broker
-      {{- with .podAnnotations }}
-      podAnnotations: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .podLabels }}
-      podLabels: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      replicas: {{ .replicas }}
-      {{- with .resources }}
-      resources: {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .runtimeProperties }}
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
-      {{- with .services }}
-      services: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .unsupported }}
-      {{- toYaml . | nindent 6 }}
-      {{- end }}
     {{- end }}
-    {{- with .coordinators }}
+    {{- with .coordinators | merge (dict "nodeCategory" "coordinators") }}
     coordinators:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    {{- with .podLabels | merge $.Values.druid.podLabels }}
-                    {{- toYaml . | nindent 20 }}
-                    {{- end }}
-                    app: druid
-                    component: coordinator
-                    druid_cr: {{ include "druid.fullname" $ }}
-                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-coordinators
-                topologyKey: kubernetes.io/hostname
-              weight: 1
-      druid.port: {{ .druidPort }}
-      {{- with .env }}
-      env: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .envFrom }}
-      envFrom: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .extraJvmOptions }}
-      extra.jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .jvmOptions }}
-      jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .kind }}
-      kind: {{ . }}
-      {{- end }}
+      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
-      {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      nodeType: coordinator
-      {{- with .podAnnotations }}
-      podAnnotations: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .podLabels }}
-      podLabels: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      replicas: {{ .replicas }}
-      {{- with .resources }}
-      resources: {{- toYaml . | nindent 8 }}
-      {{- end }}
       runtime.properties: |
         druid.coordinator.asOverlord.enabled=true
         druid.coordinator.asOverlord.overlordService=druid/overlord
@@ -245,74 +205,22 @@ spec:
         effectively disable it - see
         https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
       */}}
-      {{- with .services }}
-      services: {{- toYaml . | nindent 8 }}
-      {{- end }}
       startUpProbe:
         exec:
           command: [ /bin/true ]
         initialDelaySeconds: 0
-      {{- with .unsupported }}
-      {{- toYaml . | nindent 6 }}
-      {{- end }}
     {{- end }}
-    {{- range $class, $_ := .historicals }}
-    "{{ $class }}":
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    {{- with .podLabels | merge $.Values.druid.podLabels }}
-                    {{- toYaml . | nindent 20 }}
-                    {{- end }}
-                    app: druid
-                    component: historical
-                    druid_cr: {{ include "druid.fullname" $ }}
-                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-{{ $class }}
-                topologyKey: kubernetes.io/hostname
-              weight: 1
-      druid.port: {{ .druidPort }}
-      {{- with .env }}
-      env: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .envFrom }}
-      envFrom: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .extraJvmOptions }}
-      extra.jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .jvmOptions }}
-      jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .kind }}
-      kind: {{ . }}
-      {{- end }}
+    {{- range $nodeCategory, $_ := .historicals }}
+    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    "{{ $nodeCategory }}":
+      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
-      {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      nodeType: historical
-      {{- with .podAnnotations }}
-      podAnnotations: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .podLabels }}
-      podLabels: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      replicas: {{ .replicas }}
-      {{- with .resources }}
-      resources: {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- $storage := .storage }}
       runtime.properties: |
         {{- with $storage }}
         druid.segmentCache.locations=[ { "freeSpacePercent": {{ .freeSpacePercent }}, "maxSize": "{{ .size }}", "path": "/druid/data/segments" } ]
         {{- end }}
         {{- include "druid.properties" .runtimeProperties | nindent 8 }}
-      {{- with .services }}
-      services: {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with $storage }}
       volumeClaimTemplates:
         - metadata:
@@ -325,67 +233,15 @@ spec:
                 storage: {{ .size }}
             storageClassName: {{ .class | default $.Values.global.defaultStorageClass }}
       {{- end }}
-      {{- with .unsupported }}
-      {{- toYaml . | nindent 6 }}
-      {{- end }}
     {{- end }}
-    {{- with .routers }}
+    {{- end }}
+    {{- with .routers | merge (dict "nodeCategory" "routers") }}
     routers:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    {{- with .podLabels | merge $.Values.druid.podLabels }}
-                    {{- toYaml . | nindent 20 }}
-                    {{- end }}
-                    app: druid
-                    component: router
-                    druid_cr: {{ include "druid.fullname" $ }}
-                    nodeSpecUniqueStr: druid-{{ include "druid.fullname" $ }}-routers
-                topologyKey: kubernetes.io/hostname
-              weight: 1
-      druid.port: {{ .druidPort }}
-      {{- with .env }}
-      env: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .envFrom }}
-      envFrom: {{ toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .extraJvmOptions }}
-      extra.jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .jvmOptions }}
-      jvm.options: {{ . | join " " }}
-      {{- end }}
-      {{- with .kind }}
-      kind: {{ . }}
-      {{- end }}
+      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
-      {{- with .nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      nodeType: router
-      {{- with .podAnnotations }}
-      podAnnotations: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .podLabels }}
-      podLabels: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      replicas: {{ .replicas }}
-      {{- with .resources }}
-      resources: {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .runtimeProperties }}
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
-      {{- end }}
-      {{- with .services }}
-      services: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .unsupported }}
-      {{- toYaml . | nindent 6 }}
       {{- end }}
     {{- end }}
   {{- end }}

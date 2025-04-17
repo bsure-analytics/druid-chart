@@ -73,6 +73,7 @@ druid:
       jvmOptions: [ ]
       kind: Deployment
       nodeSelector: { }
+      nodeType: broker
       podAnnotations: { }
       podLabels: { }
       replicas: 1
@@ -93,6 +94,7 @@ druid:
       jvmOptions: [ ]
       kind: Deployment
       nodeSelector: { }
+      nodeType: coordinator
       podAnnotations: { }
       podLabels: { }
       replicas: 1
@@ -126,8 +128,9 @@ druid:
           - -Xms512m
           - -Xmx512m
         jvmOptions: [ ]
-        kind: ''
+        kind: ""
         nodeSelector: { }
+        nodeType: historical
         podAnnotations: { }
         podLabels: { }
         replicas: 0
@@ -135,7 +138,7 @@ druid:
         runtimeProperties: { }
         services: [ ]
         storage:
-          class: ''
+          class: ""
           freeSpacePercent: 10
           size: 10Gi
         unsupported: { }
@@ -147,8 +150,9 @@ druid:
           - -Xms512m
           - -Xmx512m
         jvmOptions: [ ]
-        kind: ''
+        kind: ""
         nodeSelector: { }
+        nodeType: historical
         podAnnotations: { }
         podLabels: { }
         replicas: 1
@@ -156,7 +160,7 @@ druid:
         runtimeProperties: { }
         services: [ ]
         storage:
-          class: ''
+          class: ""
           freeSpacePercent: 10
           size: 10Gi
         unsupported: { }
@@ -172,6 +176,7 @@ druid:
       jvmOptions: [ ]
       kind: Deployment
       nodeSelector: { }
+      nodeType: router
       podAnnotations: { }
       podLabels: { }
       replicas: 1
