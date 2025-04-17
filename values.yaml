@@ -72,6 +72,7 @@ druid:
         - -Xmx512m
       jvmOptions: [ ]
       kind: Deployment
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
       nodeSelector: { }
       nodeType: broker
       podAnnotations: { }
@@ -84,6 +85,29 @@ druid:
             enable: true
       services: [ ]
       unsupported: { }
+    cold:
+      druidPort: 8088
+      env: [ ]
+      envFrom: [ ]
+      extraJvmOptions:
+        - -Xms512m
+        - -Xmx512m
+      jvmOptions: [ ]
+      kind: StatefulSet
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
+      nodeSelector: { }
+      nodeType: historical
+      podAnnotations: { }
+      podLabels: { }
+      replicas: 0
+      resources: { }
+      runtimeProperties: { }
+      services: [ ]
+      storage:
+        class: ""
+        freeSpacePercent: 10
+        size: 10Gi
+      unsupported: { }
     coordinators:
       druidPort: 8088
       env: [ ]
@@ -93,6 +117,7 @@ druid:
         - -Xmx800m
       jvmOptions: [ ]
       kind: Deployment
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
       nodeSelector: { }
       nodeType: coordinator
       podAnnotations: { }
@@ -119,51 +144,29 @@ druid:
                 - -server
       services: [ ]
       unsupported: { }
-    historicals: # this is a role
-      cold:
-        druidPort: 8088
-        env: [ ]
-        envFrom: [ ]
-        extraJvmOptions:
-          - -Xms512m
-          - -Xmx512m
-        jvmOptions: [ ]
-        kind: ""
-        nodeSelector: { }
-        nodeType: historical
-        podAnnotations: { }
-        podLabels: { }
-        replicas: 0
-        resources: { }
-        runtimeProperties: { }
-        services: [ ]
-        storage:
-          class: ""
-          freeSpacePercent: 10
-          size: 10Gi
-        unsupported: { }
-      hot:
-        druidPort: 8088
-        env: [ ]
-        envFrom: [ ]
-        extraJvmOptions:
-          - -Xms512m
-          - -Xmx512m
-        jvmOptions: [ ]
-        kind: ""
-        nodeSelector: { }
-        nodeType: historical
-        podAnnotations: { }
-        podLabels: { }
-        replicas: 1
-        resources: { }
-        runtimeProperties: { }
-        services: [ ]
-        storage:
-          class: ""
-          freeSpacePercent: 10
-          size: 10Gi
-        unsupported: { }
+    hot:
+      druidPort: 8088
+      env: [ ]
+      envFrom: [ ]
+      extraJvmOptions:
+        - -Xms512m
+        - -Xmx512m
+      jvmOptions: [ ]
+      kind: StatefulSet
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
+      nodeSelector: { }
+      nodeType: historical
+      podAnnotations: { }
+      podLabels: { }
+      replicas: 1
+      resources: { }
+      runtimeProperties: { }
+      services: [ ]
+      storage:
+        class: ""
+        freeSpacePercent: 10
+        size: 10Gi
+      unsupported: { }
     routers:
       # Port 8088 is required because it's hardcoded in the Druid operator - see
       # https://github.com/datainfrahq/druid-operator/issues/220 :
@@ -175,6 +178,7 @@ druid:
         - -Xms512M
       jvmOptions: [ ]
       kind: Deployment
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
       nodeSelector: { }
       nodeType: router
       podAnnotations: { }

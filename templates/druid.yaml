@@ -30,6 +30,7 @@ jvm.options: {{ . | join " " }}
 {{- with .kind }}
 kind: {{ . }}
 {{- end }}
+nodeConfigMountPath: {{ .nodeConfigMountPath }}
 {{- with .nodeSelector }}
 nodeSelector: {{- toYaml . | nindent 8 }}
 {{- end }}
@@ -176,19 +177,22 @@ spec:
   {{- end }}
   {{- with .nodes }}
   nodes:
-    {{- with .brokers | merge (dict "nodeCategory" "brokers") }}
-    brokers:
-      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
-      nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
+    {{- range $nodeCategory, $_ := . }}
+    {{- if eq .nodeType "broker" }}
+    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{ $nodeCategory }}:
       {{- with .runtimeProperties }}
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
-    {{- end }}
-    {{- with .coordinators | merge (dict "nodeCategory" "coordinators") }}
-    coordinators:
       {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
-      nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- range $nodeCategory, $_ := . }}
+    {{- if eq .nodeType "coordinator" }}
+    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{ $nodeCategory }}:
       runtime.properties: |
         druid.coordinator.asOverlord.enabled=true
         druid.coordinator.asOverlord.overlordService=druid/overlord
@@ -209,12 +213,14 @@ spec:
         exec:
           command: [ /bin/true ]
         initialDelaySeconds: 0
-    {{- end }}
-    {{- range $nodeCategory, $_ := .historicals }}
-    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
-    "{{ $nodeCategory }}":
       {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
-      nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- range $nodeCategory, $_ := . }}
+    {{- if eq .nodeType "historical" }}
+    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{ $nodeCategory }}:
       {{- $storage := .storage }}
       runtime.properties: |
         {{- with $storage }}
@@ -233,16 +239,21 @@ spec:
                 storage: {{ .size }}
             storageClassName: {{ .class | default $.Values.global.defaultStorageClass }}
       {{- end }}
-    {{- end }}
-    {{- end }}
-    {{- with .routers | merge (dict "nodeCategory" "routers") }}
-    routers:
       {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
-      nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- range $nodeCategory, $_ := . }}
+    {{- if eq .nodeType "router" }}
+    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{ $nodeCategory }}:
       {{- with .runtimeProperties }}
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
+      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
+    {{- end }}
+    {{- end }}
     {{- end }}
   {{- end }}
   podAnnotations: {{- toYaml .podAnnotations | nindent 4 }}
