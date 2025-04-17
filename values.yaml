@@ -75,7 +75,7 @@ druid:
       nodeSelector: { }
       podAnnotations: { }
       podLabels: { }
-      replicas: 2
+      replicas: 1
       resources: { }
       runtimeProperties:
         druid:
@@ -95,7 +95,7 @@ druid:
       nodeSelector: { }
       podAnnotations: { }
       podLabels: { }
-      replicas: 2
+      replicas: 1
       resources: { }
       runtimeProperties:
         druid:
@@ -151,7 +151,7 @@ druid:
         nodeSelector: { }
         podAnnotations: { }
         podLabels: { }
-        replicas: 2
+        replicas: 1
         resources: { }
         runtimeProperties: { }
         services: [ ]
@@ -174,7 +174,7 @@ druid:
       nodeSelector: { }
       podAnnotations: { }
       podLabels: { }
-      replicas: 2
+      replicas: 1
       resources: { }
       runtimeProperties:
         druid:
