@@ -22,7 +22,7 @@ spec:
                 --selector app.kubernetes.io/instance={{ $.Release.Name }} \
                 --selector app.kubernetes.io/name={{ include "druid.name" $ }} \
                 --wait=true
-              kubectl delete druid {{ include "druid.fullname" $ }} \
+              exec kubectl delete druid {{ include "druid.fullname" $ }} \
                 --namespace {{ $.Release.Namespace }} \
                 --wait=true
           image: "bitnami/kubectl:{{ $.Capabilities.KubeVersion.Version | trimPrefix "v" }}"
