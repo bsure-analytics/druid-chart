@@ -1,0 +1,49 @@
+druid:
+  secret:
+    stringData:
+      AWS_ACCESS_KEY_ID: druid
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: druid123
+  spec:
+    commonRuntimeProperties:
+      druid:
+        s3:
+          enablePathStyleAccess: true
+          endpoint.signingRegion: us-east-1
+          endpoint.url: http://druid-minio:9000/
+          protocol: http
+#    image:
+#      repository: christianschlichtherle/druid
+#      tag: 32.0.1
+    metadataStorage:
+      connector:
+        connectURI: jdbc:postgresql://druid-postgresql/druid
+        password: druid
+        user: druid
+global:
+  defaultStorageClass: standard
+metricsServer:
+  args:
+    - --kubelet-insecure-tls
+    - --kubelet-preferred-address-types=InternalIP
+  enabled: true
+  nameOverride: metrics-server
+minio:
+  auth:
+    rootPassword: druid123
+    rootUser: druid
+  defaultBuckets: druid
+  enabled: true
+nameOverride: druid
+operator:
+  enabled: true
+#  image:
+#    repository: christianschlichtherle/druid-operator
+#    tag: v1.3.0
+postgresql:
+  auth:
+    database: druid
+    enablePostgresUser: false
+    password: druid
+    username: druid
+  enabled: true

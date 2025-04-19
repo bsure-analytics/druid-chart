@@ -4,21 +4,23 @@
 jobs:
   release:
     env:
-      GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-      GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+      CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # https://github.com/actions/checkout
-      - uses: azure/setup-helm@v4 # https://github.com/azure/setup-helm
-      - name: Package and index Helm chart
-        run: make dist
-      - uses: peaceiris/actions-gh-pages@v4 # https://github.com/peaceiris/actions-gh-pages
+      - uses: actions/checkout@v4
+      - run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - uses: helm/chart-releaser-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          keep_files: true
-          publish_dir: dist
+          charts_dir: 'charts/druid'
+      - run: make init
+      - uses: helm/chart-releaser-action@v1
+        with:
+          skip_existing: true
 on:
   push:
     # Publish semver tags as releases:

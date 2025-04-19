@@ -5,7 +5,7 @@ affinity:
       - podAffinityTerm:
           labelSelector:
             matchLabels:
-              {{- with .podLabels | merge .root.Values.druid.podLabels }}
+              {{- with .podLabels | merge .root.Values.spec.podLabels }}
               {{- toYaml . | nindent 20 }}
               {{- end }}
               app: druid
@@ -53,12 +53,18 @@ services: {{- toYaml . | nindent 8 }}
 {{- end }}
 {{- end -}}
 
-{{- with $.Values.druid }}
+{{- with $.Values.spec }}
+{{- $metadataStorage := .metadataStorage }}
 {{- $extensions := list }}
 {{- range $k, $_ := .extensions }}
-{{- $extensions = concat $extensions . }}
+{{- $extensions = . | concat $extensions }}
 {{- end }}
-{{- $metadataStorage := .metadataStorage }}
+{{- range $_ := tuple "postgresql" "mysql" }}
+{{- if eq $metadataStorage.type . }}
+{{- $extensions = print . "-metadata-storage" | concat $extensions }}
+{{- end }}
+{{- end }}
+{{- $extensions = $extensions | uniq | sortAlpha }}
 ---
 apiVersion: druid.apache.org/v1alpha1
 kind: Druid
@@ -179,19 +185,19 @@ spec:
   nodes:
     {{- range $nodeCategory, $_ := . }}
     {{- if eq .nodeType "broker" }}
-    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       {{- with .runtimeProperties }}
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
-      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
+      {{- dict "root" $ | merge . | include "druid.nodeSpec" | nindent 6 }}
     {{- end }}
     {{- end }}
     {{- end }}
     {{- range $nodeCategory, $_ := . }}
     {{- if eq .nodeType "coordinator" }}
-    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       runtime.properties: |
         druid.coordinator.asOverlord.enabled=true
@@ -213,13 +219,13 @@ spec:
         exec:
           command: [ /bin/true ]
         initialDelaySeconds: 0
-      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
+      {{- dict "root" $ | merge . | include "druid.nodeSpec" | nindent 6 }}
     {{- end }}
     {{- end }}
     {{- end }}
     {{- range $nodeCategory, $_ := . }}
     {{- if eq .nodeType "historical" }}
-    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       {{- $storage := .storage }}
       runtime.properties: |
@@ -239,19 +245,19 @@ spec:
                 storage: {{ .size }}
             storageClassName: {{ .class | default $.Values.global.defaultStorageClass }}
       {{- end }}
-      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
+      {{- dict "root" $ | merge . | include "druid.nodeSpec" | nindent 6 }}
     {{- end }}
     {{- end }}
     {{- end }}
     {{- range $nodeCategory, $_ := . }}
     {{- if eq .nodeType "router" }}
-    {{- with . | merge (dict "nodeCategory" $nodeCategory) }}
+    {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       {{- with .runtimeProperties }}
       runtime.properties: |
         {{- include "druid.properties" . | nindent 8 }}
       {{- end }}
-      {{- include "druid.nodeSpec" (. | merge (dict "root" $)) | nindent 6 }}
+      {{- dict "root" $ | merge . | include "druid.nodeSpec" | nindent 6 }}
     {{- end }}
     {{- end }}
     {{- end }}

@@ -3,7 +3,7 @@
 {{ $port := .port }}
 {{ $type := .type }}
 {{- range $role := tuple "broker" "router" }}
-{{- with $.Values.druid }}
+{{- with $.Values.spec }}
 ---
 apiVersion: v1
 kind: Service

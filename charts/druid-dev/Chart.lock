@@ -1,12 +1,18 @@
 dependencies:
+- name: druid
+  repository: file://../druid
+  version: 0.7.0-SNAPSHOT
 - name: druid-operator
   repository: https://charts.datainfra.io
   version: 0.3.9
 - name: metrics-server
   repository: https://kubernetes-sigs.github.io/metrics-server
   version: 3.12.2
+- name: minio
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.0.7
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 16.6.3
-digest: sha256:d72cbfce93e9f63b460e0c74e2534d5e3fcbd0d9196f7c0fee39e448530d2b49
-generated: "2025-04-15T19:31:52.983073+02:00"
+digest: sha256:b5971c1e17c5f6c6c5322be0a4d2e2bc8a61b25bf23b6be68a25a6f34c9e3e72
+generated: "2025-04-19T18:47:39.881951+02:00"

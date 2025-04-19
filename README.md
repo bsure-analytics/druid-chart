@@ -14,6 +14,7 @@ It provides the following features:
 + Kubernetes
 + Helm
 + GNU Make
++ yq
 + A secret with the same name as the generated Druid resource and the following keys for accessing the configured S3
   bucket(s):
   + `AWS_ACCESS_KEY_ID`

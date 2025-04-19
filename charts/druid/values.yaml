@@ -1,4 +1,26 @@
-druid:
+fullnameOverride: ""
+global:
+  defaultStorageClass: ''
+nameOverride: ""
+role:
+  annotations: { }
+roleBinding:
+  annotations: { }
+secret: { }
+#  stringData:
+#    AWS_ACCESS_KEY_ID: <aws-access-key-id>
+#    AWS_REGION: eu-central-1
+#    AWS_SECRET_ACCESS_KEY: <aws-secret-access-key>
+service:
+  enabled: true
+  port: 80
+  type: ClusterIP
+serviceAccount:
+  create: true
+  automount: true
+  annotations: { }
+  name: ""
+spec:
   affinity: { }
   annotations: { }
   # Overrides extraEnv:
@@ -25,7 +47,9 @@ druid:
       - druid-lookups-cached-global
       - druid-multi-stage-query
       - druid-s3-extensions
-      - postgresql-metadata-storage
+# One of these will be automatically added based on the value of metadataStorage.type:
+#      - mysql-metadata-storage
+#      - postgresql-metadata-storage
     org.apache.druid.extensions.contrib:
       - druid-kubernetes-overlord-extensions
   extraCommonConfig: [ ]
@@ -55,10 +79,10 @@ druid:
         </Loggers>
     </Configuration>
   metadataStorage:
-    connector: { }
-    #connectURI: jdbc:postgresql://druid-postgresql/druid
-    #password: druid
-    #user: druid
+#    connector:
+#      connectURI: jdbc:postgresql://druid-postgresql/druid
+#      password: druid
+#      user: druid
     type: postgresql
   metricDimensions: { }
   nodeSelector: { }
@@ -99,7 +123,7 @@ druid:
       nodeType: historical
       podAnnotations: { }
       podLabels: { }
-      replicas: 0
+      replicas: 1
       resources: { }
       runtimeProperties: { }
       services: [ ]
@@ -196,13 +220,6 @@ druid:
     dummy: k8s_extension_needs_at_least_one_annotation
   podLabels: { }
   s3:
-    # Configure S3 for data segments:
-    segments:
-      # Default value is the full name of the chart:
-      bucket: ""
-      disableAcls: true
-      # Default value is the name of the chart:
-      prefix: ""
     # Configure S3 for indexing logs:
     logs:
       # Default value is the full name of the chart:
@@ -210,53 +227,16 @@ druid:
       disableAcls: true
       # Default value is the name of the chart plus `-logs` as suffix:
       prefix: ""
+    # Configure S3 for data segments:
+    segments:
+      # Default value is the full name of the chart:
+      bucket: ""
+      disableAcls: true
+      # Default value is the name of the chart:
+      prefix: ""
   services:
     - spec:
         # Must be headless:
         clusterIP: None
   tolerations: [ ]
   unsupported: { }
-# Unless overridden in druid.s3.(segments|logs).bucket (see above), this is also used as the S3 bucket name:
-fullnameOverride: ""
-global:
-  #createClusterRole: false
-  defaultStorageClass: ''
-metricsServer:
-  args:
-    - --kubelet-insecure-tls
-    - --kubelet-preferred-address-types=InternalIP
-  # For local development, you may want to set this to `true`:
-  enabled: false
-  nameOverride: metrics-server
-nameOverride: ""
-operator:
-  # For local development, you may want to set this to `true`:
-  enabled: false
-  #env:
-  #  WATCH_NAMESPACE: druid
-postgresql:
-  # For local development, you may want to set this to `true`:
-  enabled: false
-  #auth:
-  #  database: druid
-  #  enablePostgresUser: false
-  #  password: druid
-  #  username: druid
-role:
-  annotations: { }
-roleBinding:
-  annotations: { }
-secret: { }
-  #stringData:
-  #  AWS_ACCESS_KEY_ID: <aws-access-key-id>
-  #  AWS_REGION: eu-central-1
-  #  AWS_SECRET_ACCESS_KEY: <aws-secret-access-key>
-service:
-  enabled: true
-  port: 80
-  type: ClusterIP
-serviceAccount:
-  create: true
-  automount: true
-  annotations: { }
-  name: ""
