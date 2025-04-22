@@ -1,31 +1,33 @@
 # See https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
 # and https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-static-site-generators-with-nodejs :
 ---
+env:
+  CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 jobs:
   release-druid:
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # chart-releaser-action NEEDS this:
+          fetch-depth: 0
       - name: Package druid chart
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           helm package charts/druid --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           skip_packaging: true
   release-druid-dev:
     needs: release-druid
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # chart-releaser-action NEEDS this:
+          fetch-depth: 0
       - run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
@@ -35,11 +37,11 @@ jobs:
           done
           helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           skip_packaging: true
 on:
   push:
     # Publish semver tags as releases:
     tags: [ 'v*.*.*' ]
+permissions:
+  contents: write
