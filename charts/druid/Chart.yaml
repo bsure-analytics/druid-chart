@@ -13,4 +13,4 @@ maintainers:
 name: druid
 sources:
   - https://github.com/bsure-analytics/druid-chart/charts/druid/tree/main
-version: 0.7.0-alpha8
+version: 0.7.0-alpha9
