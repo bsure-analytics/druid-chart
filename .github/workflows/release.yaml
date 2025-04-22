@@ -18,15 +18,15 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           helm package charts/druid --destination .cr-release-packages
-      - uses: helm/chart-releaser-action@v1
+      - uses: helm/chart-releaser-action@main
         with:
           skip_packaging: true
       - run: |
           make release
+          rm -rf .cr-release-packages
           helm package charts/druid-dev --destination .cr-release-packages
-      - uses: helm/chart-releaser-action@v1
+      - uses: helm/chart-releaser-action@main
         with:
-          skip_existing: true
           skip_packaging: true
 on:
   push:
