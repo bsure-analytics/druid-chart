@@ -505,6 +505,47 @@ entries:
     version: 0.1.0
   druid-dev:
   - apiVersion: v2
+    created: "2025-04-22T23:12:05.849432947Z"
+    dependencies:
+    - name: druid
+      repository: https://bsure-analytics.github.io/druid-chart
+      version: ^0.7.0-beta14
+    - alias: operator
+      condition: operator.enabled
+      name: druid-operator
+      repository: https://charts.datainfra.io
+      version: ^0.3.9
+    - alias: metricsServer
+      condition: metricsServer.enabled
+      name: metrics-server
+      repository: https://kubernetes-sigs.github.io/metrics-server
+      version: ^3.12.2
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: ^16.0.7
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: ^16.6.3
+    description: A Helm chart for deploying Apache Druid in a development environment
+    digest: 17fa30fbc0dc3b7d0ffcc7a2e91aaad87bf6d581bc80a9fdee44975e32eda48f
+    home: https://github.com/bsure-analytics/druid-chart
+    keywords:
+    - Apache Druid
+    - Druid
+    - development
+    - dev
+    maintainers:
+    - name: Christian Schlichtherle
+      url: https://github.com/christian-schlichtherle
+    name: druid-dev
+    sources:
+    - https://github.com/bsure-analytics/druid-chart/charts/druid-dev/tree/main
+    urls:
+    - https://github.com/bsure-analytics/druid-chart/releases/download/druid-dev-0.7.0-beta14/druid-dev-0.7.0-beta14.tgz
+    version: 0.7.0-beta14
+  - apiVersion: v2
     created: "2025-04-22T23:02:23.193387255Z"
     dependencies:
     - name: druid
@@ -627,4 +668,4 @@ entries:
     urls:
     - https://github.com/bsure-analytics/druid-chart/releases/download/druid-dev-0.7.0-beta10/druid-dev-0.7.0-beta10.tgz
     version: 0.7.0-beta10
-generated: "2025-04-22T23:11:05.493666777Z"
+generated: "2025-04-22T23:12:05.849501556Z"
