@@ -11,20 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # chart-releaser NEEDS THIS:
+          fetch-depth: 0
       - run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - uses: helm/chart-releaser-action@v1
         with:
           charts_dir: charts/druid
-          skip_existing: false
-          packages_with_index: true
       - run: make release
       - uses: helm/chart-releaser-action@v1
         with:
           charts_dir: charts/druid-dev
-          skip_existing: false
-          packages_with_index: true
 on:
   push:
     # Publish semver tags as releases:
