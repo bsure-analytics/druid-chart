@@ -6,7 +6,7 @@ affinity:
           labelSelector:
             matchLabels:
               {{- with .podLabels | merge .root.Values.spec.podLabels }}
-              {{- toYaml . | nindent 20 }}
+              {{- toYaml . | nindent 14 }}
               {{- end }}
               app: druid
               component: {{ .nodeType }}
@@ -16,10 +16,10 @@ affinity:
         weight: 1
 druid.port: {{ .druidPort }}
 {{- with .env }}
-env: {{ toYaml . | nindent 8 }}
+env: {{ toYaml . | nindent 2 }}
 {{- end }}
 {{- with .envFrom }}
-envFrom: {{ toYaml . | nindent 8 }}
+envFrom: {{ toYaml . | nindent 2 }}
 {{- end }}
 {{- with .extraJvmOptions }}
 extra.jvm.options: {{ . | join " " }}
@@ -32,24 +32,24 @@ kind: {{ . }}
 {{- end }}
 nodeConfigMountPath: {{ .nodeConfigMountPath }}
 {{- with .nodeSelector }}
-nodeSelector: {{- toYaml . | nindent 8 }}
+nodeSelector: {{- toYaml . | nindent 2 }}
 {{- end }}
 nodeType: {{ .nodeType }}
 {{- with .podAnnotations }}
-podAnnotations: {{- toYaml . | nindent 8 }}
+podAnnotations: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .podLabels }}
-podLabels: {{- toYaml . | nindent 8 }}
+podLabels: {{- toYaml . | nindent 2 }}
 {{- end }}
 replicas: {{ .replicas }}
 {{- with .resources }}
-resources: {{- toYaml . | nindent 8 }}
+resources: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .services }}
-services: {{- toYaml . | nindent 8 }}
+services: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .unsupported }}
-{{- toYaml . | nindent 6 }}
+{{- toYaml . }}
 {{- end }}
 {{- end -}}
 
