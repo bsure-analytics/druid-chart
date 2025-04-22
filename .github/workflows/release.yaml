@@ -13,7 +13,10 @@ jobs:
           # chart-releaser-action NEEDS this:
           fetch-depth: 0
       - name: Package druid chart
-        run: helm package charts/druid --destination .cr-release-packages
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          helm package charts/druid --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
           skip_packaging: true
@@ -27,6 +30,8 @@ jobs:
           fetch-depth: 0
       - name: Package druid-dev chart
         run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           for i in $(seq 1 5); do
             sleep 30
             make release && break || true
