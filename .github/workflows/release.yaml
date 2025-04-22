@@ -1,34 +1,34 @@
 # See https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
 # and https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-static-site-generators-with-nodejs :
 ---
+env:
+  CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 jobs:
-  release:
-    env:
-      CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+  release-druid:
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          # chart-releaser NEEDS THIS:
-          fetch-depth: 0
-      - run: |
+      - name: Package druid chart
+        run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          mkdir -p .cr-release-packages
           helm package charts/druid --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
           skip_packaging: true
+  release-druid-dev:
+    needs: release-druid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           for i in $(seq 1 5); do
             sleep 30
             make release && break || true
           done
-          rm -rf .cr-index .cr-release-packages
-          mkdir -p .cr-index .cr-release-packages
           helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
@@ -37,3 +37,5 @@ on:
   push:
     # Publish semver tags as releases:
     tags: [ 'v*.*.*' ]
+permissions:
+  contents: write
