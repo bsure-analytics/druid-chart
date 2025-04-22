@@ -23,10 +23,10 @@ jobs:
           skip_packaging: true
       - run: |
           for i in $(seq 1 5); do
-            sleep 10
+            sleep 20
             make release && break || true
           done
-          rm -rf .cr-release-packages
+          rm -rf .cr-index .cr-release-packages
           helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
