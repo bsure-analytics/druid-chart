@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 0.7.0-SNAPSHOT
+  version: 0.7.0-alpha1
 - name: druid-operator
   repository: https://charts.datainfra.io
   version: 0.3.9
@@ -14,5 +14,5 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 16.6.3
-digest: sha256:b5971c1e17c5f6c6c5322be0a4d2e2bc8a61b25bf23b6be68a25a6f34c9e3e72
-generated: "2025-04-19T18:47:39.881951+02:00"
+digest: sha256:c5044c7b2d32937cbd8c06b7bbf5697b28708702a504e4629b0807fa0fff8616
+generated: "2025-04-22T20:36:24.942516+02:00"
