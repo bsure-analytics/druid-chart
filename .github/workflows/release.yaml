@@ -17,13 +17,17 @@ jobs:
       - run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          helm package charts/druid --destination .cr-release-packages
       - uses: helm/chart-releaser-action@v1
         with:
-          charts_dir: charts/druid
-      - run: make release
+          skip_packaging: true
+      - run: |
+          make release
+          helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@v1
         with:
-          charts_dir: charts/druid-dev
+          skip_existing: true
+          skip_packaging: true
 on:
   push:
     # Publish semver tags as releases:
