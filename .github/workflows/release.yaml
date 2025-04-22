@@ -17,16 +17,18 @@ jobs:
       - run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          mkdir -p .cr-release-packages
           helm package charts/druid --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
           skip_packaging: true
       - run: |
           for i in $(seq 1 5); do
-            sleep 20
+            sleep 30
             make release && break || true
           done
           rm -rf .cr-index .cr-release-packages
+          mkdir -p .cr-index .cr-release-packages
           helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
