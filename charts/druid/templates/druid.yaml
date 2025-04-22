@@ -61,7 +61,7 @@ services: {{- toYaml . | nindent 8 }}
 {{- end }}
 {{- range $_ := tuple "postgresql" "mysql" }}
 {{- if eq $metadataStorage.type . }}
-{{- $extensions = print . "-metadata-storage" | concat $extensions }}
+{{- $extensions = print . "-metadata-storage" | append $extensions }}
 {{- end }}
 {{- end }}
 {{- $extensions = $extensions | uniq | sortAlpha }}
