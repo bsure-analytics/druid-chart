@@ -17,11 +17,6 @@ dependency-update init:
 		yq -i \
 		'.version = strenv(CHART_VERSION) | (.dependencies[] | select(.name == "druid")).version = "^" + strenv(CHART_VERSION)' \
 		Chart.yaml
-	[[ "$(CHART_VERSION)" =~ -SNAPSHOT$$ ]] || \
-		REPO_URL="$(REPO_URL)" \
-		    yq -i \
-	        '(.dependencies[] | select(.name == "druid")).repository = strenv(REPO_URL)' \
-	        Chart.yaml
 	helm dependency update
 
 .PHONY: diff
@@ -30,6 +25,17 @@ diff:
 		--context 3 \
 		--namespace $(HELM_NAMESPACE) \
 		$(HELM_OPTS)
+
+.PHONY: release
+release: repository-update dependency-update
+
+.PHONY: repository-update
+repository-update:
+	[[ "$(CHART_VERSION)" =~ -SNAPSHOT$$ ]] || \
+		REPO_URL="$(REPO_URL)" \
+		    yq -i \
+	        '(.dependencies[] | select(.name == "druid")).repository = strenv(REPO_URL)' \
+	        Chart.yaml
 
 .PHONY: template
 template:
