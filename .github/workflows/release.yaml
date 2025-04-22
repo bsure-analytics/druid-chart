@@ -15,13 +15,8 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - uses: helm/chart-releaser-action@v1
-        with:
-          charts_dir: 'charts/druid'
-          skip_existing: false
       - run: make release
       - uses: helm/chart-releaser-action@v1
-        with:
-          skip_existing: false
 on:
   push:
     # Publish semver tags as releases:
