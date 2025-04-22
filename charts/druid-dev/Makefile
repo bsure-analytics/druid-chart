@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 CHART_VERSION ?= $(shell yq '.version' ../druid/Chart.yaml)
 GITHUB_REPOSITORY ?= $(shell git config --get remote.origin.url | sed -E 's/.*github.com[:\/](.*)\.git/\1/')
 GITHUB_REPOSITORY_OWNER ?= $(shell echo $(GITHUB_REPOSITORY) | cut -d/ -f1)
