@@ -24,7 +24,7 @@ envFrom: {{ toYaml . | nindent 2 }}
 {{- with .extraJvmOptions }}
 extra.jvm.options: {{ . | join " " }}
 {{- end }}
-{{- with hpAutoscaler }}
+{{- with .hpAutoscaler }}
 hpAutoscaler: {{ toYaml . | nindent 2 }}
 {{- end }}
 {{- with .jvmOptions }}
