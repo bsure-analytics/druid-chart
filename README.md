@@ -1,39 +1,62 @@
-# Druid Chart
+# Druid Charts
 
-This is an opinionated Helm chart for Apache Druid.
-It provides the following features:
+This repository provides two opinionated Helm charts for Apache Druid:
 
-+ Use the Druid Operator to bring its Druid and DruidIngestion CRDs,
-  but without its quirks like e.g. JSON or Java system properties in YAML configuration.
-+ Use K8s instead of ZooKeeper for service discovery, coordination and leader election.
-+ Use K8s jobs instead of a middle manager to run the ingestions.
-+ Use pre-existing S3 buckets for storing indexing segments and logs.
+| Chart       | Use Case    | Description                                                                                                                                                                                                                | Includes Extra Services                               |
+|-------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| `druid`     | Production  | Makes deployments to production environments easy: You control the configuration using YAML only — no embedded XML, JSON or Java system properties. Sensible defaults are provided to minimize your configuration efforts. | No                                                    |
+| `druid-dev` | Development | Deploys a stack of charts to provide an out-of-the-box experience for setting up development environments.                                                                                                                 | Yes (Druid Operator, Metrics Server, MinIO, Postgres) |
 
-# Prerequisites
+# Architecture
 
-+ Kubernetes
-+ Helm
-+ GNU Make
-+ yq
-+ A secret with the same name as the generated Druid resource and the following keys for accessing the configured S3
-  bucket(s):
-  + `AWS_ACCESS_KEY_ID`
-  + `AWS_REGION`
-  + `AWS_SECRET_ACCESS_KEY`
++ The Druid Operator is used to deploy the cluster, but the Druid CRD (Custom Resource Definition) is fully
+  encapsulated to eliminate common configuration quirks such as embedding XML, JSON or Java system properties in YAML.
++ The Kubernetes API replaces ZooKeeper for service discovery, coordination and leader election.
++ Kubernetes jobs replace the middle manager for running ingestion tasks.
++ Existing S3 buckets are used for storing indexing segments and logs.
 
-# Development
+# Setup
 
-First, make sure `kubectl get nodes -o wide` is working.
-For local development, you can use Kind (Kubernetes in Docker), e.g. bundled with Docker Desktop.
-
-Next, check the file `values.yaml`.
-For any values you want to fill in or override, please do so in the file `custom.yaml` - you may need to create this
-file first. 
-
-Finally, deploy the druid-operator:
+Add the repository to Helm:
 
 ```shell
-make
+helm repo add druid-charts https://bsure-analytics.github.io/druid-charts
+helm repo update
 ```
 
-That's it - enjoy!
+## Development Environment
+
+For deployment to a development environment, e.g. Kind (Kubernetes in Docker):
+
+```shell
+helm upgrade druid druid-charts/druid-dev --create-namespace --install --namespace druid
+helm test druid --namespace druid
+kubectl port-forward --namespace druid services/druid-client-routers 8088:80 &
+kubectl port-forward --namespace druid services/druid-minio 9001:9001 &
+```
+
+... and then you can browse http://localhost:8088 to visit the Druid console.
+You can also browse http://localhost:9001 to view the Minio console - the username and password are `minio`/`minio123`,
+respectively.
+
+## Production Environment
+
+For deployment to a production environment:
+
+```shell
+helm upgrade druid druid-charts/druid --create-namespace --install --namespace druid --values my-values.yaml 
+```
+
+As an example for the `my-values.yaml` file, you could copy and edit the [values.yaml](charts/druid-dev/values.yaml)
+file from the `druid-dev` chart.
+
+## Troubleshooting
+
+**Druid Console not loading?**
+Make sure port 8088 is not already in use, or change the local port in the `kubectl port-forward` command.
+
+**MinIO UI not loading?**
+Make sure port 9001 is not already in use, or change the local port in the `kubectl port-forward` command.
+
+**Helm deployment hangs?**
+Try running `helm uninstall druid --namespace druid` and then retrying the installation.

@@ -6,7 +6,7 @@ affinity:
           labelSelector:
             matchLabels:
               {{- with .podLabels | merge .root.Values.spec.podLabels }}
-              {{ toYaml . | nindent 14 }}
+              {{- toYaml . | nindent 14 }}
               {{- end }}
               app: druid
               component: {{ .nodeType }}
@@ -16,43 +16,76 @@ affinity:
         weight: 1
 druid.port: {{ .druidPort }}
 {{- with .env }}
-env: {{ toYaml . | nindent 2 }}
+env: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .envFrom }}
-envFrom: {{ toYaml . | nindent 2 }}
+envFrom: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .extraJvmOptions }}
 extra.jvm.options: {{ . | join " " }}
 {{- end }}
-{{- with .hpAutoscaler }}
-hpAutoscaler: {{ toYaml . | nindent 2 }}
+{{- if .hpAutoscaler }}
+hpAutoscaler: {{- toYaml .hpAutoscaler | nindent 2 }}
+{{- else if .autoscaling }}
+hpAutoscaler:
+  {{- with .autoscaling}}
+  {{- with .replicas }}
+  {{- with .max }}
+  maxReplicas: {{ . | int }}
+  {{- end }}
+  {{- with .min }}
+  minReplicas: {{ . | int }}
+  {{- end }}
+  {{- end }}
+  {{- with .metrics }}
+  metrics: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: {{ .kind | default (and (empty .storage) (empty .volumeClaimTemplates) | ternary "Deployment" "StatefulSet") }}
+    name: druid-{{ include "druid.fullname" .root }}-{{ .nodeCategory }}
 {{- end }}
 {{- with .jvmOptions }}
 jvm.options: {{ . | join " " }}
 {{- end }}
-{{- with .kind }}
-kind: {{ . }}
-{{- end }}
+kind: {{ .kind | default (and (empty .storage) (empty .volumeClaimTemplates) | ternary "Deployment" "StatefulSet") }}
 nodeConfigMountPath: {{ .nodeConfigMountPath }}
 {{- with .nodeSelector }}
-nodeSelector: {{ toYaml . | nindent 2 }}
+nodeSelector: {{- toYaml . | nindent 2 }}
 {{- end }}
 nodeType: {{ .nodeType }}
 {{- with .podAnnotations }}
-podAnnotations: {{ toYaml . | nindent 2 }}
+podAnnotations: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .podLabels }}
-podLabels: {{ toYaml . | nindent 2 }}
+podLabels: {{- toYaml . | nindent 2 }}
 {{- end }}
 replicas: {{ .replicas }}
 {{- with .resources }}
-resources: {{ toYaml . | nindent 2 }}
+resources: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- with .services }}
-services: {{ toYaml . | nindent 2 }}
+services: {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- if .volumeClaimTemplates }}
+volumeClaimTemplates: {{- toYaml .volumeClaimTemplates | nindent 2 }}
+{{- else }}
+{{- with .storage }}
+volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .size | default $.root.Values.global.defaultStorageSize }}
+      storageClassName: {{ .class | default $.root.Values.global.defaultStorageClass }}
+{{- end }}
 {{- end }}
 {{- with .unsupported }}
-{{ toYaml . }}
+{{- toYaml . | nindent 0 }}
 {{- end }}
 {{- end -}}
 
@@ -213,7 +246,7 @@ spec:
         {{- end }}
         druid.indexer.task.encapsulatedTask=true
         {{- include "druid.properties" .runtimeProperties | nindent 8 }}
-      {{- /*
+      {{/*
         The peons will inherit this probe from the overlord, but they don't share the same endpoints, so we have to
         effectively disable it - see
         https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
@@ -230,24 +263,11 @@ spec:
     {{- if eq .nodeType "historical" }}
     {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
-      {{- $storage := .storage }}
       runtime.properties: |
-        {{- with $storage }}
-        druid.segmentCache.locations=[ { "freeSpacePercent": {{ .freeSpacePercent }}, "maxSize": "{{ .size }}", "path": "/druid/data/segments" } ]
+        {{- with .storage }}
+        druid.segmentCache.locations=[ { "freeSpacePercent": {{ .freeSpacePercent }}, "maxSize": "{{ .size | default $.Values.global.defaultStorageSize }}", "path": "/druid/data/segments" } ]
         {{- end }}
         {{- include "druid.properties" .runtimeProperties | nindent 8 }}
-      {{- with $storage }}
-      volumeClaimTemplates:
-        - metadata:
-            name: data
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: {{ .size }}
-            storageClassName: {{ .class | default $.Values.global.defaultStorageClass }}
-      {{- end }}
       {{- dict "root" $ | merge . | include "druid.nodeSpec" | nindent 6 }}
     {{- end }}
     {{- end }}
@@ -299,6 +319,24 @@ spec:
       name: tmp
     - emptyDir: { }
       name: var
+  {{- if .volumeClaimTemplates }}
+  {{- with .volumeClaimTemplates }}
+  volumeClaimTemplates: {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- else }}
+  {{- with .storage }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .size | default $.Values.global.defaultStorageSize }}
+        storageClassName: {{ .class | default $.Values.global.defaultStorageClass }}
+  {{- end }}
+  {{- end }}
   {{- with .unsupported }}
   {{- toYaml . | nindent 2 }}
   {{- end }}

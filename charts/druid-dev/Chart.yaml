@@ -2,7 +2,7 @@ apiVersion: v2
 dependencies:
   - name: druid
     repository: file://../druid
-    version: ^0.7.0-rc3
+    version: ^0.7.0-rc4
   - condition: operator.enabled
     alias: operator
     name: druid-operator
@@ -16,13 +16,13 @@ dependencies:
   - condition: minio.enabled
     name: minio
     repository: https://charts.bitnami.com/bitnami
-    version: ^16.0.7
+    version: ^16.0.8
   - condition: postgresql.enabled
     name: postgresql
     repository: https://charts.bitnami.com/bitnami
     version: ^16.6.3
 description: A Helm chart for deploying Apache Druid in a development environment.
-home: https://github.com/bsure-analytics/druid-chart
+home: https://github.com/bsure-analytics/druid-charts
 keywords:
   - Apache Druid
   - Druid
@@ -33,5 +33,5 @@ maintainers:
     url: https://github.com/christian-schlichtherle
 name: druid-dev
 sources:
-  - https://github.com/bsure-analytics/druid-chart/charts/druid-dev/tree/main
-version: 0.7.0-rc3
+  - https://github.com/bsure-analytics/druid-charts/charts/druid-dev/tree/main
+version: 0.7.0-rc4

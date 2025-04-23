@@ -1,9 +1,9 @@
 druid:
   secret:
     stringData:
-      AWS_ACCESS_KEY_ID: druid
+      AWS_ACCESS_KEY_ID: minio
       AWS_REGION: us-east-1
-      AWS_SECRET_ACCESS_KEY: druid123
+      AWS_SECRET_ACCESS_KEY: minio123
   spec:
     commonRuntimeProperties:
       druid:
@@ -12,16 +12,30 @@ druid:
           endpoint.signingRegion: us-east-1
           endpoint.url: http://druid-minio:9000/
           protocol: http
-#    image:
-#      repository: christianschlichtherle/druid
-#      tag: 32.0.1
     metadataStorage:
       connector:
         connectURI: jdbc:postgresql://druid-postgresql/druid
         password: druid
         user: druid
+    nodes:
+      brokers:
+        autoscaling:
+          replicas:
+            max: 3
+            min: 1
+          metrics:
+            - type: Resource
+              resource:
+                name: cpu
+                target:
+                  type: Utilization
+                  averageUtilization: 50
+        resources:
+          requests:
+            cpu: "1"
 global:
   defaultStorageClass: standard
+  defaultStorageSize: 10Gi
 metricsServer:
   args:
     - --kubelet-insecure-tls
@@ -30,16 +44,13 @@ metricsServer:
   nameOverride: metrics-server
 minio:
   auth:
-    rootPassword: druid123
-    rootUser: druid
+    rootPassword: minio123
+    rootUser: minio
   defaultBuckets: druid
   enabled: true
 nameOverride: druid
 operator:
   enabled: true
-#  image:
-#    repository: christianschlichtherle/druid-operator
-#    tag: v1.3.0
 postgresql:
   auth:
     database: druid

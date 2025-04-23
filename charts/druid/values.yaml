@@ -1,6 +1,7 @@
 fullnameOverride: ""
 global:
-  defaultStorageClass: ''
+  defaultStorageClass: ""
+  defaultStorageSize: ""
 nameOverride: ""
 role:
   annotations: { }
@@ -88,6 +89,7 @@ spec:
   nodeSelector: { }
   nodes:
     brokers:
+      autoscaling: { }
       druidPort: 8088
       env: [ ]
       envFrom: [ ]
@@ -96,7 +98,7 @@ spec:
         - -Xmx512m
       hpAutoscaler: { }
       jvmOptions: [ ]
-      kind: Deployment
+      kind: ""
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
       nodeSelector: { }
       nodeType: broker
@@ -109,8 +111,11 @@ spec:
           sql:
             enable: true
       services: [ ]
+      storage: { }
       unsupported: { }
+      volumeClaimTemplates: { }
     cold:
+      autoscaling: { }
       druidPort: 8088
       env: [ ]
       envFrom: [ ]
@@ -119,22 +124,29 @@ spec:
         - -Xmx512m
       hpAutoscaler: { }
       jvmOptions: [ ]
-      kind: StatefulSet
+      kind: ""
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
       nodeSelector: { }
       nodeType: historical
       podAnnotations: { }
       podLabels: { }
-      replicas: 1
+      replicas: 0
       resources: { }
-      runtimeProperties: { }
+      runtimeProperties:
+        druid:
+          service: druid/cold
+          server:
+            priority: 0
+            tier: cold
       services: [ ]
       storage:
         class: ""
         freeSpacePercent: 10
-        size: 10Gi
+        size: ""
       unsupported: { }
+      volumeClaimTemplates: { }
     coordinators:
+      autoscaling: { }
       druidPort: 8088
       env: [ ]
       envFrom: [ ]
@@ -143,7 +155,7 @@ spec:
         - -Xmx800m
       hpAutoscaler: { }
       jvmOptions: [ ]
-      kind: Deployment
+      kind: ""
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
       nodeSelector: { }
       nodeType: coordinator
@@ -170,8 +182,11 @@ spec:
                 - -Xmx512m
                 - -server
       services: [ ]
+      storage: { }
       unsupported: { }
-    hot:
+      volumeClaimTemplates: { }
+    historicals:
+      autoscaling: { }
       druidPort: 8088
       env: [ ]
       envFrom: [ ]
@@ -180,7 +195,7 @@ spec:
         - -Xmx512m
       hpAutoscaler: { }
       jvmOptions: [ ]
-      kind: StatefulSet
+      kind: ""
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
       nodeSelector: { }
       nodeType: historical
@@ -193,10 +208,43 @@ spec:
       storage:
         class: ""
         freeSpacePercent: 10
-        size: 10Gi
+        size: ""
       unsupported: { }
+      volumeClaimTemplates: { }
+    hot:
+      autoscaling: { }
+      druidPort: 8088
+      env: [ ]
+      envFrom: [ ]
+      extraJvmOptions:
+        - -Xms512m
+        - -Xmx512m
+      hpAutoscaler: { }
+      jvmOptions: [ ]
+      kind: ""
+      nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
+      nodeSelector: { }
+      nodeType: historical
+      podAnnotations: { }
+      podLabels: { }
+      replicas: 0
+      resources: { }
+      runtimeProperties:
+        druid:
+          service: druid/hot
+          server:
+            priority: 1
+            tier: hot
+      services: [ ]
+      storage:
+        class: ""
+        freeSpacePercent: 10
+        size: ""
+      unsupported: { }
+      volumeClaimTemplates: { }
     routers:
-      # Port 8088 is required because it's hardcoded in the Druid operator - see
+      autoscaling: { }
+      # As of Druid Operator 1.3.0, port 8088 is required because it's hardcoded in the Druid operator - see
       # https://github.com/datainfrahq/druid-operator/issues/220 :
       druidPort: 8088
       env: [ ]
@@ -206,7 +254,7 @@ spec:
         - -Xms512M
       hpAutoscaler: { }
       jvmOptions: [ ]
-      kind: Deployment
+      kind: ""
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
       nodeSelector: { }
       nodeType: router
@@ -220,7 +268,9 @@ spec:
             managementProxy:
               enabled: true
       services: [ ]
+      storage: { }
       unsupported: { }
+      volumeClaimTemplates: { }
   podAnnotations:
     dummy: k8s_extension_needs_at_least_one_annotation
   podLabels: { }
@@ -243,5 +293,7 @@ spec:
     - spec:
         # Must be headless:
         clusterIP: None
+  storage: { }
   tolerations: [ ]
   unsupported: { }
+  volumeClaimTemplates: { }
