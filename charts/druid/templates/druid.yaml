@@ -220,7 +220,7 @@ spec:
   {{- with .nodes }}
   nodes:
     {{- range $nodeCategory, $_ := . }}
-    {{- if eq .nodeType "broker" }}
+    {{- if and (eq .nodeType "broker") (.replicas | int | lt 0) }}
     {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       {{- with .runtimeProperties }}
@@ -232,7 +232,7 @@ spec:
     {{- end }}
     {{- end }}
     {{- range $nodeCategory, $_ := . }}
-    {{- if eq .nodeType "coordinator" }}
+    {{- if and (eq .nodeType "coordinator") (.replicas | int | lt 0) }}
     {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       runtime.properties: |
@@ -260,7 +260,7 @@ spec:
     {{- end }}
     {{- end }}
     {{- range $nodeCategory, $_ := . }}
-    {{- if eq .nodeType "historical" }}
+    {{- if and (eq .nodeType "historical") (.replicas | int | lt 0) }}
     {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       runtime.properties: |
@@ -273,7 +273,7 @@ spec:
     {{- end }}
     {{- end }}
     {{- range $nodeCategory, $_ := . }}
-    {{- if eq .nodeType "router" }}
+    {{- if and (eq .nodeType "router") (.replicas | int | lt 0) }}
     {{- with dict "nodeCategory" $nodeCategory | merge . }}
     {{ $nodeCategory }}:
       {{- with .runtimeProperties }}
