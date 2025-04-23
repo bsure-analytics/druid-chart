@@ -42,6 +42,7 @@ jobs:
           helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
         with:
+          mark_as_latest: false
           skip_packaging: true
 on:
   push:
