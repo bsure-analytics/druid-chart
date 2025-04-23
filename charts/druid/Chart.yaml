@@ -1,6 +1,6 @@
 apiVersion: v2
 appVersion: 32.0.1
-description: A Helm chart for deploying Apache Druid in a production environment
+description: A Helm chart for deploying Apache Druid in a production environment.
 home: https://github.com/bsure-analytics/druid-chart
 keywords:
   - Apache Druid
@@ -13,4 +13,4 @@ maintainers:
 name: druid
 sources:
   - https://github.com/bsure-analytics/druid-chart/charts/druid/tree/main
-version: 0.7.0-rc1
+version: 0.7.0-rc2

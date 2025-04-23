@@ -94,6 +94,7 @@ spec:
       extraJvmOptions:
         - -Xms512m
         - -Xmx512m
+      hpAutoscaler: { }
       jvmOptions: [ ]
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/broker
@@ -116,6 +117,7 @@ spec:
       extraJvmOptions:
         - -Xms512m
         - -Xmx512m
+      hpAutoscaler: { }
       jvmOptions: [ ]
       kind: StatefulSet
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
@@ -139,6 +141,7 @@ spec:
       extraJvmOptions:
         - -Xms800m
         - -Xmx800m
+      hpAutoscaler: { }
       jvmOptions: [ ]
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
@@ -175,6 +178,7 @@ spec:
       extraJvmOptions:
         - -Xms512m
         - -Xmx512m
+      hpAutoscaler: { }
       jvmOptions: [ ]
       kind: StatefulSet
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/data/historical
@@ -200,6 +204,7 @@ spec:
       extraJvmOptions:
         - -Xmx512M
         - -Xms512M
+      hpAutoscaler: { }
       jvmOptions: [ ]
       kind: Deployment
       nodeConfigMountPath: /opt/druid/conf/druid/cluster/query/router
