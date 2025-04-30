@@ -37,7 +37,7 @@ jobs:
         run: |
           for i in $(seq 1 10); do
             sleep 30
-            make release && break || true
+            make release && break
           done
           helm package charts/druid-dev --destination .cr-release-packages
       - uses: helm/chart-releaser-action@main
