@@ -91,16 +91,23 @@ volumeClaimTemplates:
 
 {{- with $.Values.spec }}
 {{- $metadataStorage := .metadataStorage }}
-{{- $extensions := list }}
-{{- range $k, $_ := .extensions }}
-{{- $extensions = . | concat $extensions }}
+{{- $extensionLoadList := list }}
+{{- $nonCoreExtensionGroupAndArtifactIds := list }}
+{{- range $groupId, $artifactIds := .extensions }}
+{{- $extensionLoadList = $artifactIds | concat $extensionLoadList }}
+{{- if ne $groupId "org.apache.druid.extensions" }}
+{{- range $artifactId := $artifactIds }}
+{{- $nonCoreExtensionGroupAndArtifactIds = print $groupId ":" $artifactId | append $nonCoreExtensionGroupAndArtifactIds }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- range $_ := tuple "postgresql" "mysql" }}
 {{- if eq $metadataStorage.type . }}
-{{- $extensions = print . "-metadata-storage" | append $extensions }}
+{{- $extensionLoadList = print . "-metadata-storage" | append $extensionLoadList }}
 {{- end }}
 {{- end }}
-{{- $extensions = $extensions | uniq | sortAlpha }}
+{{- $extensionLoadList = $extensionLoadList | uniq | sortAlpha }}
+{{- $nonCoreExtensionGroupAndArtifactIds = $nonCoreExtensionGroupAndArtifactIds | uniq | sortAlpha }}
 ---
 apiVersion: druid.apache.org/v1alpha1
 kind: Druid
@@ -108,6 +115,7 @@ metadata:
   labels: {{- include "druid.labels" $ | nindent 4 }}
   name: {{ include "druid.fullname" $ }}
 spec:
+  {{- if $nonCoreExtensionGroupAndArtifactIds }}
   additionalContainer:
     - command:
         - bash
@@ -119,12 +127,8 @@ spec:
             -classpath "lib/*" \
             -Ddruid.extensions.directory=/extensions \
             org.apache.druid.cli.Main tools pull-deps \
-            {{- range $groupId, $_ := .extensions }}
-            {{- if ne $groupId "org.apache.druid.extensions" }}
-            {{- range $artifactId := . }}
-            -c {{ $groupId }}:{{ $artifactId }} \
-            {{- end }}
-            {{- end }}
+            {{- range $extensionGroupAndArtifactId := $nonCoreExtensionGroupAndArtifactIds }}
+            -c {{ $extensionGroupAndArtifactId }} \
             {{- end }}
             --defaultVersion {{ $.Chart.AppVersion }} \
             --no-default-hadoop
@@ -136,13 +140,14 @@ spec:
       volumeMounts:
         - mountPath: /extensions
           name: extensions
+  {{- end }}
   {{- with .affinity }}
   affinity: {{- toYaml . | nindent 4 }}
   {{- end }}
   common.runtime.properties: |
     druid.discovery.k8s.clusterIdentifier={{ include "druid.fullname" $ }}
     druid.discovery.type=k8s
-    druid.extensions.loadList={{ toRawJson $extensions }}
+    druid.extensions.loadList={{ toRawJson $extensionLoadList }}
     {{- with .s3.logs }}
     druid.indexer.logs.disableAcl={{ .disableAcls }}
     druid.indexer.logs.s3Bucket={{ .bucket | default (include "druid.fullname" $) }}
@@ -169,6 +174,11 @@ spec:
     {{- else }}
     {{- with .extraEnv }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if ge (.image.tag | default $.Chart.AppVersion | semver).Major 33 }}
+    {{- /* https://github.com/apache/druid/releases/tag/druid-33.0.0#33.0.0-upgrade-notes-and-incompatible-changes-upgrade-notes-kubernetes-deployments */}}
+    - name: DRUID_SET_HOST_IP
+      value: "1"
     {{- end }}
     - name: POD_NAME
       valueFrom:
@@ -246,7 +256,7 @@ spec:
         {{- end }}
         druid.indexer.task.encapsulatedTask=true
         {{- include "druid.properties" .runtimeProperties | nindent 8 }}
-      {{/*
+      {{- /*
         The peons will inherit this probe from the overlord, but they don't share the same endpoints, so we have to
         effectively disable it - see
         https://druid.apache.org/docs/latest/development/extensions-contrib/k8s-jobs#overlord-single-container-pod-adapteroverlord-multi-container-pod-adapter
@@ -303,9 +313,11 @@ spec:
   volumeMounts:
     - mountPath: /druid/data
       name: data
+    {{- if $nonCoreExtensionGroupAndArtifactIds }}
     - mountPath: /opt/druid/extensions
       name: extensions
       readOnly: true
+    {{- end }}
     - mountPath: /tmp
       name: tmp
     - mountPath: /opt/druid/var
@@ -313,8 +325,10 @@ spec:
   volumes:
     - emptyDir: { }
       name: data
+    {{- if $nonCoreExtensionGroupAndArtifactIds }}
     - emptyDir: { }
       name: extensions
+    {{- end }}
     - emptyDir: { }
       name: tmp
     - emptyDir: { }
